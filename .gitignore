@@ -1,0 +1,7 @@
+/.idea
+/.vs
+
+/thunderstore/build
+obj
+bin
+/*.DotSettings.user
