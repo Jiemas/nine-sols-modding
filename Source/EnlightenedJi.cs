@@ -22,6 +22,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     private Harmony harmony = null!;
 
     private ConfigEntry<float> JiAnimatorSpeed = null!;
+    private string jiAttackStatesPath = "";
 
     private void Awake() {
         Log.Init(Logger);
@@ -43,7 +44,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         // thunderstore.toml.
 
         // KeybindManager.Add(this, TestMethod, () => somethingKeyboardShortcut.Value);
-        // KeybindManager.Add(this, LoadAssetBundle, KeyCode.T);
+        KeybindManager.Add(this, LoadAssetBundle, KeyCode.T);
 
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
@@ -52,7 +53,6 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     public void Update() {
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
-            Logger.LogInfo("Updating Ji variables!");
             MonsterManager.Instance.ClosetMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
         };
     }
@@ -76,16 +76,21 @@ public class EnlightenedJi : BaseUnityPlugin {
         // var assetBundle = AssetBundle.LoadFromMemory(allBytes);
 
         // The bundle is defined in the .csproj as <EmbeddedResource />
-        var assetBundle = AssemblyUtils.GetEmbeddedAssetBundle("ExampleMod.preloads.bundle");
+        // var assetBundle = AssemblyUtils.GetEmbeddedAssetBundle("ExampleMod.preloads.bundle");
         // In a real mod you probably want to load the assetbundle once when you want to use it,
         // and keep the spawned scene in memory if they're not too big.
         // There's a bunch of optimizations you can figure out here.
-        if (assetBundle == null) {
-            ToastManager.Toast("Failed to load AssetBundle");
-            return;
-        }
 
-        StartCoroutine(SpawnEnemies(assetBundle));
+        jiAttackStatesPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/Attacks/";
+
+        ToastManager.Toast(GameObject.Find($"{jiAttackStatesPath}[1]Divination Free Zone"));
+
+        // if (assetBundle == null) {
+        //     ToastManager.Toast("Failed to load AssetBundle");
+        //     return;
+        // }
+
+        // StartCoroutine(SpawnEnemies(assetBundle));
     }
 
     // Loads all the scenes contained in the AssetBundle, and spawn copies of their objects
