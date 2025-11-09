@@ -10,6 +10,9 @@ using NineSolsAPI.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using System;
+using System.Reflection;
+
 namespace EnlightenedJi;
 
 [BepInDependency(NineSolsAPICore.PluginGUID)]
@@ -23,6 +26,14 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private ConfigEntry<float> JiAnimatorSpeed = null!;
     private string jiAttackStatesPath = "";
+    private string jiStunStatePath = "";
+
+    #region Attacks LinkStateWeight
+    LinkNextMoveStateWeight QuickTeleportSwordStateWeight = null!;
+    BossGeneralState QuickTeleportSwordBossGeneralState = null!;
+
+
+    #endregion
 
     private void Awake() {
         Log.Init(Logger);
@@ -53,7 +64,10 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     public void Update() {
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
+            GetAttackGameObjects();
             MonsterManager.Instance.ClosetMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
+
+            
         };
     }
 
@@ -81,10 +95,12 @@ public class EnlightenedJi : BaseUnityPlugin {
         // and keep the spawned scene in memory if they're not too big.
         // There's a bunch of optimizations you can figure out here.
 
-        jiAttackStatesPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/Attacks/";
+        QuickTeleportSwordBossGeneralState = GameObject.Find($"{jiAttackStatesPath}[5][Short]SuckSword 往內/").GetComponent<BossGeneralState>();
 
-        ToastManager.Toast(GameObject.Find($"{jiAttackStatesPath}[1]Divination Free Zone"));
+        DumpType(QuickTeleportSwordBossGeneralState);
 
+        ToastManager.Toast(QuickTeleportSwordBossGeneralState.linkNextMoveStateWeights);
+        AttackWeight test  = new AttackWeight();
         // if (assetBundle == null) {
         //     ToastManager.Toast("Failed to load AssetBundle");
         //     return;
@@ -92,6 +108,16 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         // StartCoroutine(SpawnEnemies(assetBundle));
     }
+
+    public void GetAttackGameObjects(){
+        jiAttackStatesPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/Attacks/";
+        jiStunStatePath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/PostureBreak/";
+        string foo = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/LogicRoot/Sensors/1_AttackSensor/";
+
+        string jiAttackSequencesPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/AttackSequenceModule/MonsterStateSequence_Phase1/";
+    }
+
+
 
     // Loads all the scenes contained in the AssetBundle, and spawn copies of their objects
     private static IEnumerator SpawnEnemies(AssetBundle bundle) {
@@ -132,5 +158,52 @@ public class EnlightenedJi : BaseUnityPlugin {
         // Make sure to clean up resources here to support hot reloading
 
         harmony.UnpatchSelf();
+    }
+
+
+
+
+    public static void DumpType(object obj)
+    {
+        if (obj == null)
+        {
+            Log.Info("Object is null, cannot inspect");
+            return;
+        }
+
+        Type type = obj.GetType();
+        Log.Info($"Dumping members of type: {type.FullName}");
+
+        BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        // Fields
+        FieldInfo[] fields = type.GetFields(flags);
+        Log.Info($"Fields ({fields.Length}):");
+        foreach (var f in fields)
+        {
+            var value = f.GetValue(obj);
+            Log.Info($"  Field: {f.Name} (Type: {f.FieldType.Name}) = {value}");
+        }
+
+        // Properties
+        PropertyInfo[] props = type.GetProperties(flags);
+        Log.Info($"Properties ({props.Length}):");
+        foreach (var p in props)
+        {
+            // Optionally safe-get value
+            object val = null;
+            try { val = p.GetValue(obj); }
+            catch { val = " <unreadable> "; }
+            Log.Info($"  Property: {p.Name} (Type: {p.PropertyType.Name}) = {val}");
+        }
+
+        // Methods
+        MethodInfo[] methods = type.GetMethods(flags);
+        Log.Info($"Methods ({methods.Length}):");
+        foreach (var m in methods)
+        {
+            if (m.IsSpecialName) continue;  // skip property accessors, etc
+            Log.Info($"  Method: {m.Name} (Return: {m.ReturnType.Name})");
+        }
     }
 }
