@@ -34,8 +34,6 @@ public class EnlightenedJi : BaseUnityPlugin {
     private string jiAttackGroupsPath = "";
 
     private bool HPUpdated = false;
-    private float originalHPValue = 0;
-    private float originalHPRef = 0;
 
     // #region Attacks BossGeneralState
     // BossGeneralState DivinationFreeZoneBossGeneralState = null!;
@@ -47,14 +45,16 @@ public class EnlightenedJi : BaseUnityPlugin {
     // BossGeneralState SwordBlizzardBossGeneralState = null!;
     // BossGeneralState DivinationFreeZoneEndlessBossGeneralState = null!;
     // BossGeneralState GroundSwordBossGeneralState = null!;
-    // BossGeneralState SmallBlackHoleBossGeneralState = null!;
-    // BossGeneralState ShortFlyingSwordBossGeneralState = null!;
-    // BossGeneralState QuickHorizontalDoubleSwordBossGeneralState = null!;
-    // BossGeneralState QuickTeleportSwordBossGeneralState = null!;
-    // BossGeneralState LaserAltarCircleBossGeneralState = null!;
+    BossGeneralState SmallBlackHoleBossGeneralState = null!;
+    BossGeneralState ShortFlyingSwordBossGeneralState = null!;
+    BossGeneralState QuickHorizontalDoubleSwordBossGeneralState = null!;
+    BossGeneralState QuickTeleportSwordBossGeneralState = null!;
+    BossGeneralState LaserAltarCircleBossGeneralState = null!;
     // BossGeneralState HealthAltarBossGeneralState = null!;
     // BossGeneralState DivinationJumpKickedBossGeneralState = null!;
     // #endregion
+
+    PostureBreakState JiStunState = null!;
 
     #region Attack Sequences MonsterStateGroupSequence
     MonsterStateGroupSequence AttackSequence1_FirstAttackGroupSequence = null!;
@@ -63,11 +63,15 @@ public class EnlightenedJi : BaseUnityPlugin {
     MonsterStateGroupSequence AttackSequence1_SmallBlackHoleGroupSequence = null!;
     MonsterStateGroupSequence AttackSequence1_QuickToBlizzardGroupSequence = null!;
     MonsterStateGroupSequence SpecialHealthSequence = null!;
+
+    MonsterStateGroup SneakAttackStateGroup = new MonsterStateGroup();
     #endregion
 
     #region Attack Groups MonsterStateGroup
     MonsterStateGroup SmallBlackHoleMonsterStateGroup = null!;
     #endregion
+
+    StealthEngaging Engaging = null!;
 
     private void Awake() {
         Log.Init(Logger);
@@ -93,17 +97,25 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
-        JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1f, "The speed at which Ji's attacks occur");
-        JiHPScale = Config.Bind("General", "JiHPScale", 1f, "The scale for Ji's HP, 1 is modded HP amount");
+        JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
+        JiHPScale = Config.Bind("General", "JiHPScale", 7000f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is double this value)");
     }
 
     public void Update() {
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
+            var JiMonster = MonsterManager.Instance.ClosetMonster;
+
             GetAttackGameObjects();
             AlterAttacks();
             JiHPChange();
-            MonsterManager.Instance.ClosetMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
-
+            if (JiMonster && (JiMonster.currentMonsterState == SmallBlackHoleBossGeneralState || 
+            JiMonster.currentMonsterState == Engaging || 
+            (JiMonster.LastClipName == "Attack13" && JiMonster.currentMonsterState != QuickTeleportSwordBossGeneralState))) {
+                JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 3;
+                // ToastManager.Toast("Increased Ji Animation Speed for Black Hole and Laser Altar Circle Attack");
+            } else {
+                JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
+            }
             
         };
     }
@@ -111,14 +123,9 @@ public class EnlightenedJi : BaseUnityPlugin {
     private void JiHPChange() {
         var baseHealthRef = AccessTools.FieldRefAccess<MonsterStat, float>("BaseHealthValue");
         var JiMonster = MonsterManager.Instance.ClosetMonster;
-        // baseHealthRef(JiMonster.monsterStat) = 5000f;
-
         if (!HPUpdated && JiMonster) {
-            ToastManager.Toast($"HP Value before change: {JiMonster.postureSystem.CurrentHealthValue}");
-            baseHealthRef(JiMonster.monsterStat) = 5185.18518519f;
-            JiMonster.postureSystem.CurrentHealthValue = 7000f;
-            
-
+            baseHealthRef(JiMonster.monsterStat) = JiHPScale.Value / 1.35f;
+            JiMonster.postureSystem.CurrentHealthValue = JiHPScale.Value;
             HPUpdated = true;
             ToastManager.Toast($"Set Ji Phase 1 HP to {JiMonster.postureSystem.CurrentHealthValue}");
         }
@@ -153,7 +160,9 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         // DumpType(QuickTeleportSwordBossGeneralState);
 
-        ToastManager.Toast($"Current Ji HP {MonsterManager.Instance.ClosetMonster.postureSystem.CurrentHealthValue}");
+        DumpType(MonsterManager.Instance.ClosetMonster);
+        MonsterManager.Instance.ClosetMonster.OnShield();
+        
         // if (assetBundle == null) {
         //     ToastManager.Toast("Failed to load AssetBundle");
         //     return;
@@ -170,13 +179,17 @@ public class EnlightenedJi : BaseUnityPlugin {
         return GameObject.Find($"{jiAttackGroupsPath}{name}").GetComponent<MonsterStateGroup>();
     }
 
+    private BossGeneralState getBossGeneralState(string name){
+        return GameObject.Find($"{jiAttackStatesPath}{name}").GetComponent<BossGeneralState>();
+    }
+
     public void GetAttackGameObjects(){
         // jiAttackStatesPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/Attacks/";
-        // jiStunStatePath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/States/PostureBreak/";
         // string foo = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/LogicRoot/Sensors/1_AttackSensor/";
 
         jiBossPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/";
 
+        jiAttackStatesPath = jiBossPath + "States/Attacks/";
         jiAttackSequencesPath = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateSequence_Phase1/";
         jiAttackGroupsPath = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateGroupDefinition/";
 
@@ -186,48 +199,99 @@ public class EnlightenedJi : BaseUnityPlugin {
         AttackSequence1_SmallBlackHoleGroupSequence = getGroupSequence("MonsterStateGroupSequence1_WithSmallBlackHole");
         AttackSequence1_QuickToBlizzardGroupSequence = getGroupSequence("MonsterStateGroupSequence1_QuickToBlizzard");
         SpecialHealthSequence = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)").GetComponent<MonsterStateGroupSequence>();
+        
         SmallBlackHoleMonsterStateGroup = getGroup("MonsterStateGroup_SmallBlackHole(Attack10)");
 
+        JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
+
+        SmallBlackHoleBossGeneralState = getBossGeneralState("[10][Altar]SmallBlackHole");
+        ShortFlyingSwordBossGeneralState = getBossGeneralState("[11][Short]ShorFlyingSword");
+        QuickHorizontalDoubleSwordBossGeneralState = getBossGeneralState("[12][Short]QuickHorizontalDoubleSword");
+        LaserAltarCircleBossGeneralState = getBossGeneralState("[14][Altar]Laser Altar Circle");
+        QuickTeleportSwordBossGeneralState = getBossGeneralState("[13][Finisher]QuickTeleportSword 危戳");
+
+        Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
     }
 
     private void AddSmallBlackHoleGroupToSequence(MonsterStateGroupSequence sequence){
-        List<MonsterStateGroup> attackSequence = sequence.AttackSequence;
-        if (attackSequence[attackSequence.Count - 1] != SmallBlackHoleMonsterStateGroup && MonsterManager.Instance.ClosetMonster){
-            attackSequence.Add(SmallBlackHoleMonsterStateGroup);
-            ToastManager.Toast($"Inserted Small Black Hole Attack into {sequence.name}");
-        }
+        sequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
+        // List<MonsterStateGroup> attackSequence = sequence.AttackSequence;
+        // if (attackSequence[attackSequence.Count - 1] != SmallBlackHoleMonsterStateGroup){
+        //     attackSequence.Add(SmallBlackHoleMonsterStateGroup);
+        //     ToastManager.Toast($"Inserted Small Black Hole Attack into {sequence.name}");
+        // }
+    }
+
+    private void AddSneakAttackGroupToSequence(MonsterStateGroupSequence sequence){
+        sequence.AttackSequence.Add(SneakAttackStateGroup);
+        // if (attackSequence[attackSequence.Count - 1].name != "SneakAttackStateGroup"){
+        //     attackSequence.Add(SneakAttackStateGroup);
+        //     ToastManager.Toast($"Inserted Sneak Attack into {sequence.name}");
+        // }
+    }
+
+    private Weight<MonsterState> CreateWeight(MonsterState state){
+        return new Weight<MonsterState>{
+            weight = 1,
+            option = state
+        };
     }
 
     public void AlterAttacks(){
-        AddSmallBlackHoleGroupToSequence(AttackSequence1_FirstAttackGroupSequence);
-        AddSmallBlackHoleGroupToSequence(AttackSequence1_GroupSequence);
-        AddSmallBlackHoleGroupToSequence(AttackSequence1_AltarGroupSequence);
-        AddSmallBlackHoleGroupToSequence(AttackSequence1_SmallBlackHoleGroupSequence);
-        AddSmallBlackHoleGroupToSequence(AttackSequence1_QuickToBlizzardGroupSequence);
-        AddSmallBlackHoleGroupToSequence(SpecialHealthSequence);
-        // List<MonsterStateGroup> AttackSequence1_FirstAttack = AttackSequence1_FirstAttackGroupSequence.AttackSequence;
-        // if (!AttackSequence1_FirstAttack.Contains(SmallBlackHoleMonsterStateGroup)){
-        //     AttackSequence1_FirstAttack.Add(SmallBlackHoleMonsterStateGroup);
-        //     ToastManager.Toast("Inserted Small Black Hole Attack into First Attack Sequence");
-        // }
-        // if (!AttackSequence1_GroupSequence.AttackSequence.Contains(SmallBlackHoleMonsterStateGroup)){
-        //     AttackSequence1_GroupSequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
-        //     ToastManager.Toast("Inserted Small Black Hole Attack into Attack Sequence");
-        // }
-        // if (!AttackSequence1_AltarGroupSequence.AttackSequence.Contains(SmallBlackHoleMonsterStateGroup)){
-        //     AttackSequence1_AltarGroupSequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
-        //     ToastManager.Toast("Inserted Small Black Hole Attack into Altar Attack Sequence");
-        // }
-        // if (!AttackSequence1_SmallBlackHoleGroupSequence.AttackSequence.Contains(SmallBlackHoleMonsterStateGroup)){
-        //     AttackSequence1_SmallBlackHoleGroupSequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
-        //     ToastManager.Toast("Inserted Small Black Hole Attack into Small Black Hole Attack Sequence");
-        // }
-        // if (!AttackSequence1_QuickToBlizzardGroupSequence.AttackSequence.Contains(SmallBlackHoleMonsterStateGroup)){
-        //     AttackSequence1_QuickToBlizzardGroupSequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
-        //     ToastManager.Toast("Inserted Small Black Hole Attack into Quick To Blizzard Attack Sequence");
-        // }
-    }
+        if (!JiStunState.enabled) return;
+        JiStunState.enabled = false;
 
+        Weight<MonsterState> SmallBlackHoleWeight = CreateWeight(SmallBlackHoleBossGeneralState);
+        Weight<MonsterState> ShortFlyingSwordWeight = CreateWeight(ShortFlyingSwordBossGeneralState);
+        Weight<MonsterState> QuickHorizontalDoubleSwordWeight = CreateWeight(QuickHorizontalDoubleSwordBossGeneralState);
+        Weight<MonsterState> LaserAltarCircleWeight = CreateWeight(LaserAltarCircleBossGeneralState);
+        Weight<MonsterState> QuickTeleportSwordWeight = CreateWeight(QuickTeleportSwordBossGeneralState);
+
+        MonsterStateWeightSetting SurpriseAttackWeightSetting = new MonsterStateWeightSetting{
+            stateWeightList = new List<Weight<MonsterState>>{
+                SmallBlackHoleWeight,
+                ShortFlyingSwordWeight,
+                QuickHorizontalDoubleSwordWeight,
+                LaserAltarCircleWeight,
+                QuickTeleportSwordWeight
+            },
+            queue = new List<MonsterState>{
+                SmallBlackHoleBossGeneralState, 
+                ShortFlyingSwordBossGeneralState, 
+                QuickHorizontalDoubleSwordBossGeneralState, 
+                LaserAltarCircleBossGeneralState,
+                QuickTeleportSwordBossGeneralState
+            }
+        };
+
+        GameObject go = new GameObject("MonsterStateGroup_SneakAttack(Attack 10/11/12/13/14)");
+        SneakAttackStateGroup = go.AddComponent<MonsterStateGroup>();
+        SneakAttackStateGroup.setting = SurpriseAttackWeightSetting;
+
+
+        // SneakAttackStateGroup = new MonsterStateGroup { setting = SurpriseAttackWeightSetting };
+        bool isNull = SneakAttackStateGroup == null;
+        ToastManager.Toast($"1. isNull? {isNull}");
+        if (SneakAttackStateGroup != null) {
+            ToastManager.Toast($"1. Type: {SneakAttackStateGroup.GetType().FullName}");
+        }
+
+        // SneakAttackStateGroup = GameObject.AddComponent<MonsterStateGroup>();
+        // SneakAttackStateGroup.setting = SurpriseAttackWeightSetting;
+        // ToastManager.Toast($"11. isNull? {isNull}");
+        // if (SneakAttackStateGroup != null) {
+        //     ToastManager.Toast($"11. Type: {SneakAttackStateGroup.GetType().FullName}");
+        // }
+
+        AddSneakAttackGroupToSequence(AttackSequence1_FirstAttackGroupSequence);
+        AddSneakAttackGroupToSequence(AttackSequence1_GroupSequence);
+        AddSneakAttackGroupToSequence(AttackSequence1_AltarGroupSequence);
+        AddSneakAttackGroupToSequence(AttackSequence1_SmallBlackHoleGroupSequence);
+        AddSneakAttackGroupToSequence(AttackSequence1_QuickToBlizzardGroupSequence);
+        AddSneakAttackGroupToSequence(SpecialHealthSequence);
+
+        ToastManager.Toast($"2. {SneakAttackStateGroup}");
+    }
 
     // Loads all the scenes contained in the AssetBundle, and spawn copies of their objects
     private static IEnumerator SpawnEnemies(AssetBundle bundle) {
@@ -267,9 +331,6 @@ public class EnlightenedJi : BaseUnityPlugin {
     private void OnDestroy() {
         // Make sure to clean up resources here to support hot reloading
         HPUpdated = false;
-        if (originalHPValue != 0) {
-            // MonsterManager.Instance.ClosetMonster.postureSystem.CurrentHealthValue = originalHPValue;
-        }
         harmony.UnpatchSelf();
     }
 
