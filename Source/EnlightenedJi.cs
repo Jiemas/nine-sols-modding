@@ -116,21 +116,6 @@ public class EnlightenedJi : BaseUnityPlugin {
         // Load patches from any class annotated with @HarmonyPatch
         harmony = Harmony.CreateAndPatchAll(typeof(EnlightenedJi).Assembly);
 
-        // enableSomethingConfig = Config.Bind("General.Something", "Enable", true, "Enable the thing");
-        // somethingKeyboardShortcut = Config.Bind("General.Something",
-        //     "Shortcut",
-        //     new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
-        //     "Shortcut to execute");
-
-        // Usage of the modding API is entirely optional.
-        // It provides utilities like the KeybindManager, utilities for Instantiating objects including the 
-        // NineSols lifecycle hooks, displaying toast messages and preloading objects from other scenes.
-        // If you do use the API make sure do have it installed when running your mod, and keep the dependency in the
-        // thunderstore.toml.
-
-        // KeybindManager.Add(this, TestMethod, () => somethingKeyboardShortcut.Value);
-        KeybindManager.Add(this, LoadAssetBundle, KeyCode.T);
-
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
 
         JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
@@ -145,12 +130,6 @@ public class EnlightenedJi : BaseUnityPlugin {
             JiHPChange();
             JiSpeedChange();
 
-            if (JiMonster && JiMonster.postureSystem.CurrentHealthValue == 0)
-            {
-                phase2 = true;
-                // ToastManager.Toast("AHHH");
-            }
-
             if (JiMonster && temp != JiMonster.currentMonsterState.ToString()) {
                 temp = JiMonster.currentMonsterState.ToString();
                 randomNum = random.Next();
@@ -158,8 +137,6 @@ public class EnlightenedJi : BaseUnityPlugin {
                     phase2 = true;
                 } 
                 phasesFromBlackHole = JiMonster.currentMonsterState == SmallBlackHoleBossGeneralState ? 0 : (phasesFromBlackHole + 1);
-
-                ToastManager.Toast($"{JiMonster.currentMonsterState} | Phase 2: {phase2} | Sequence: {GetCurrentSequence()}");
             }
         } 
     }
@@ -223,7 +200,7 @@ public class EnlightenedJi : BaseUnityPlugin {
             if (JiMonster.currentMonsterState == LaserAltarCircleBossGeneralState) {
                 JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 2f;
             } else {
-               JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.65f; // Might be too fast?? 
+               JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.65f;
             }
 
         // Hard Altar Attack Speed Up
@@ -294,37 +271,6 @@ public class EnlightenedJi : BaseUnityPlugin {
         FieldInfo fieldInfo = type.GetField("sequence", BindingFlags.Instance | BindingFlags.NonPublic);
         MonsterStateGroupSequence sequenceValue = (MonsterStateGroupSequence)fieldInfo.GetValue(attackSequenceModule);
         return sequenceValue;
-    }
-
-    private void LoadAssetBundle() {
-        // const string path = "/home/jakob/dev/unity/RustyAssetBundleEXtractor/out.test";
-        // var allBytes = File.ReadAllBytes(path);
-        // var assetBundle = AssetBundle.LoadFromMemory(allBytes);
-
-        // The bundle is defined in the .csproj as <EmbeddedResource />
-        // var assetBundle = AssemblyUtils.GetEmbeddedAssetBundle("ExampleMod.preloads.bundle");
-        // In a real mod you probably want to load the assetbundle once when you want to use it,
-        // and keep the spawned scene in memory if they're not too big.
-        // There's a bunch of optimizations you can figure out here.
-
-        // QuickTeleportSwordBossGeneralState = GameObject.Find($"{jiAttackStatesPath}[5][Short]SuckSword 往內/").GetComponent<BossGeneralState>();
-        // string title = "Enlightened Ji";
-        // List<GameObjectStringSearcher.Match> output = GameObjectStringSearcher.SearchStringsInHierarchy(GO101, title);
-        // foreach (var outs in output)
-        // {
-            // ToastManager.Toast(outs);
-        // }
-        // DumpType(attackSequenceModule);
-
-        // DumpType(MonsterManager.Instance.ClosetMonster);
-        // MonsterManager.Instance.ClosetMonster.currentMonsterState = HealthAltarBossGeneralState;
-        
-        // if (assetBundle == null) {
-        //     ToastManager.Toast("Failed to load AssetBundle");
-        //     return;
-        // }
-
-        // StartCoroutine(SpawnEnemies(assetBundle));
     }
 
     private MonsterStateGroupSequence getGroupSequence1(string name){
