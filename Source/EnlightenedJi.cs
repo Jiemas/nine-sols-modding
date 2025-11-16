@@ -10,6 +10,8 @@ using NineSolsAPI.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using TMPro;
+
 using System;
 using System.Reflection;
 
@@ -115,6 +117,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     MonsterStateGroup SneakAttack2StateGroup = new MonsterStateGroup();
     MonsterStateGroup HardAltarOrEasyFinisherAttackStateGroup = new MonsterStateGroup();
     MonsterStateGroup HardAltarOrHardFinisherAttackStateGroup = new MonsterStateGroup();
+    MonsterStateGroup LaserAltarOrFinisherAttackStateGroup = new MonsterStateGroup();
     MonsterStateGroup SmallBlackHoleMonsterStateGroup = null!;
     MonsterStateGroup LongerAttackStateGroup = null!;
     MonsterStateGroup BlizzardAttackStateGroup = null!;
@@ -122,12 +125,15 @@ public class EnlightenedJi : BaseUnityPlugin {
     MonsterStateGroup LaserAltarEasyAttackStateGroup = null!;
     MonsterStateGroup FinisherEasierAttackStateGroup = null!;
     MonsterStateGroup BigBlackHoleAttackStateGroup = null!;
+    MonsterStateGroup FinisherHardOrEasierAttackStateGroup = null!;
     #endregion
 
     StealthEngaging Engaging = null!;
     BossPhaseChangeState PhaseChangeState = null!;
 
     AttackSequenceModule attackSequenceModule = null!;
+
+    RubyTextMeshProUGUI BossName = null!;
 
     private void Awake() {
         Log.Init(Logger);
@@ -144,22 +150,41 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     public void Update() {
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
-            var JiMonster = MonsterManager.Instance.ClosetMonster;
             GetAttackGameObjects();
             AlterAttacks();
             JiHPChange();
             JiSpeedChange();
+            HandleStateChange();
+        } 
+    }
 
-            if (JiMonster && temp != JiMonster.currentMonsterState.ToString()) {
-                temp = JiMonster.currentMonsterState.ToString();
-                randomNum = random.Next();
-                if (JiMonster.currentMonsterState == PhaseChangeState) {
-                    phase2 = true;
-                } 
-                phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
-                ToastManager.Toast(phase2);
+    private void HandleStateChange() 
+    {
+        var JiMonster = MonsterManager.Instance.ClosetMonster;
+
+        if (JiMonster.currentMonsterState == PhaseChangeState) {
+            if (updateCounter < 50)
+            {
+                updateCounter++;
+            }
+            else {
+                updateCounter = 0;
+                BossName.text = "The Kunlun Immortal";
             }
         } 
+
+        if (JiMonster && temp != JiMonster.currentMonsterState.ToString()) {
+            temp = JiMonster.currentMonsterState.ToString();
+            randomNum = random.Next();
+            if (JiMonster.currentMonsterState == PhaseChangeState) {
+                phase2 = true;
+                OverwriteAttackGroupInSequence(SpecialHealthSequence, 5, SneakAttack2StateGroup);
+            }
+            phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
+            ToastManager.Toast(JiMonster.currentMonsterState);
+            ToastManager.Toast(GetCurrentSequence());
+            ToastManager.Toast("");
+        }
     }
 
     private List<BossGeneralState> GetIndices(int[] indices)
@@ -188,8 +213,6 @@ public class EnlightenedJi : BaseUnityPlugin {
             return;
         } else if (phase2 && JiSpeedChangePhase2()) {
             return;
-        } else if (JiMonster.LastClipName == "PostureBreak") {
-            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.2f;
         } else {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
         }
@@ -204,12 +227,22 @@ public class EnlightenedJi : BaseUnityPlugin {
             GetIndices([11, 12, 14]).Contains(JiMonster.currentMonsterState))
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 2;
+        
+        // 2nd Finisher & Long Attack Speed Up
         } else if ((JiMonster.currentMonsterState == BossGeneralStates[13] && 
             (JiMonster.LastClipName == "Attack13" || JiMonster.LastClipName == "PostureBreak")) || 
             (randomNum % 2 == 0 && GetIndices([11, 5]).Contains(JiMonster.currentMonsterState)))
         {
             ToastManager.Toast(JiMonster.currentMonsterState);
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.5f;
+        } else if (GetCurrentSequence() == AttackSequence1_QuickToBlizzardGroupSequence &&
+            JiMonster.currentMonsterState == BossGeneralStates[7])
+        {
+            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.5f;
+
+        // Random Attack Speed Up
+        } else if (randomNum % 3 == 0) {
+            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.2f;
         } else {
             return false;
         }
@@ -234,11 +267,16 @@ public class EnlightenedJi : BaseUnityPlugin {
         // Hard Altar Attack Speed Up
         } else if (JiMonster.currentMonsterState == BossGeneralStates[4] && phasesFromBlackHole > 6) 
         {
-            updateCounter++;
-            if (updateCounter < 500) {
-                JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 1.65f;
+            if (phasesFromBlackHole > 6)
+            {
+                updateCounter++;
+                if (updateCounter < 500) {
+                    JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 1.65f;
+                } else {
+                    updateCounter = 0;
+                }    
             } else {
-                updateCounter = 0;
+                JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value - 0.1f;
             }
         
         // Blizzard Attack Speed up
@@ -334,7 +372,6 @@ public class EnlightenedJi : BaseUnityPlugin {
         AttackSequence2_SmallBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithSmallBlackHole");
         AttackSequence2_QuickToBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlackHole");
     
-
         SmallBlackHoleMonsterStateGroup = getGroup("MonsterStateGroup_SmallBlackHole(Attack10)");
         LongerAttackStateGroup = AttackSequence1_GroupSequence.AttackSequence[3];
         BlizzardAttackStateGroup = AttackSequence1_QuickToBlizzardGroupSequence.AttackSequence[1];
@@ -342,7 +379,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         LaserAltarEasyAttackStateGroup = AttackSequence1_AltarGroupSequence.AttackSequence[1];
         FinisherEasierAttackStateGroup = AttackSequence1_AltarGroupSequence.AttackSequence[4];
         BigBlackHoleAttackStateGroup = AttackSequence2_Opening.AttackSequence[0];
-
+        FinisherHardOrEasierAttackStateGroup = AttackSequence2.AttackSequence[5];
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
         
@@ -352,19 +389,10 @@ public class EnlightenedJi : BaseUnityPlugin {
         Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
 
         attackSequenceModule = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/").GetComponent<AttackSequenceModule>();
+        // ToastManager.Toast("test");
 
-    }
+        BossName = GameObject.Find("GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName").GetComponent<RubyTextMeshProUGUI>();
 
-    private void AddSmallBlackHoleGroupToSequence(MonsterStateGroupSequence sequence){
-        sequence.AttackSequence.Add(SmallBlackHoleMonsterStateGroup);
-    }
-
-    private void AddSneakAttackGroupToSequence(MonsterStateGroupSequence sequence){
-        sequence.AttackSequence.Add(SneakAttackStateGroup);
-    }
-
-    private void InsertBackAttackGroupToSequence(MonsterStateGroupSequence sequence, int index){
-        sequence.AttackSequence.Insert(index, BackAttackStateGroup);
     }
 
     private void OverwriteAttackGroupInSequence(MonsterStateGroupSequence sequence, int index, MonsterStateGroup newGroup){
@@ -408,95 +436,111 @@ public class EnlightenedJi : BaseUnityPlugin {
         return newAttackGroup;
     }
 
+    private void ModifySequence(MonsterStateGroupSequence sequence, 
+        MonsterStateGroup[] groupsToAdd, 
+        (MonsterStateGroup group, int index)[] groupsToOverwrite,
+        (MonsterStateGroup group, int index)[] groupsToInsert)
+    {
+        foreach (MonsterStateGroup group in groupsToAdd)
+        {
+            sequence.AttackSequence.Add(group);
+        }
+        foreach ((MonsterStateGroup group, int index) in groupsToOverwrite)
+        {
+            sequence.AttackSequence[index] = group;
+        }
+        foreach ((MonsterStateGroup group, int index) in groupsToInsert)
+        {
+            sequence.AttackSequence.Insert(index, group);
+        }
+    }
+
     public void AlterAttacks(){
         if (AttackSequence1_FirstAttackGroupSequence.AttackSequence.Contains(SneakAttackStateGroup)) {
             return;
         }
         phase2 = false;
 
-        SneakAttackStateGroup = CreateMonsterStateGroup([11, 12, 13, 14], "MonsterStateGroup_SneakAttack(Attack 11/12/13/14)");
+        // Custom Attack Groups
+        SneakAttackStateGroup = CreateMonsterStateGroup([10, 11, 12, 13, 14], "MonsterStateGroup_SneakAttack(Attack 10/11/12/13/14)");
         BackAttackStateGroup = CreateMonsterStateGroup([5, 9], "MonsterStateGroup_BackAttack(Attack 5/9)");
         LongerOrBlizardAttackStateGroup = CreateMonsterStateGroup([5, 9, 7], "MonsterStateGroup_LongerOrBlizardAttack(Attack 5/9/7)");
         SwordOrLaserAttackStateGroup = CreateMonsterStateGroup([11, 12, 14], "MonsterStateGroup_SwordOrLaserAttack(Attack 11/12/14)");
         SwordOrAltarAttackStateGroup = CreateMonsterStateGroup([10, 12, 14], "MonsterStateGroup_SwordOrAltarAttack(Attack10/12/14)");
         LaserAltarHardAttackStateGroup = CreateMonsterStateGroup([4], "MonsterStateGroup_LaserAltarHardAttack(Attack4)");
         DoubleTroubleAttackStateGroup = CreateMonsterStateGroup([2, 5, 9, 12], "MonsterStateGroup_DoubleTroubleAttack(Attack2/9/12/5)");
-        SneakAttack2StateGroup = CreateMonsterStateGroup([2, 4, 5, 9, 11, 12, 14], "MonsterStateGroup_SneakAttack2(Attack2/4/5/9/11/12/14)");
+        SneakAttack2StateGroup = CreateMonsterStateGroup([2, 5, 9, 11, 12, 15], "MonsterStateGroup_SneakAttack2(Attack2/5/9/11/12/15)");
         HardAltarOrEasyFinisherAttackStateGroup = CreateMonsterStateGroup([4, 13], "MonsterStateGroup_HardAltarOrEasyFinisher(Attack4/13)");
         HardAltarOrHardFinisherAttackStateGroup = CreateMonsterStateGroup([4, 6], "MonsterStateGroup_HardAltarOrHardFinisher(Attack4/6)");
-   
+        LaserAltarOrFinisherAttackStateGroup = CreateMonsterStateGroup([4, 6, 13, 14], "MonsterStateGroup_LaserAltarOrFinisher(Attack 4/6/13/14)");
 
-        AddSneakAttackGroupToSequence(AttackSequence1_FirstAttackGroupSequence);
-        AddSneakAttackGroupToSequence(AttackSequence1_GroupSequence);
-        AddSneakAttackGroupToSequence(AttackSequence1_AltarGroupSequence);
-        AddSneakAttackGroupToSequence(AttackSequence1_SmallBlackHoleGroupSequence);
-        AddSneakAttackGroupToSequence(AttackSequence1_QuickToBlizzardGroupSequence);
-        AddSneakAttackGroupToSequence(SpecialHealthSequence);
+        // Phase 1 Sequence Attack Modifications
+        ModifySequence(AttackSequence1_GroupSequence, [SneakAttackStateGroup], 
+            new (MonsterStateGroup group, int index)[] {(SneakAttackStateGroup, 2), (FinisherHardOrEasierAttackStateGroup, 4)}, 
+            new (MonsterStateGroup group, int index)[] {(BackAttackStateGroup, 4)}
+        );
 
-        OverwriteAttackGroupInSequence(AttackSequence1_GroupSequence, 2, SneakAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence1_FirstAttackGroupSequence, 1, SneakAttackStateGroup);
+        ModifySequence(AttackSequence1_AltarGroupSequence, [SneakAttackStateGroup],
+            new (MonsterStateGroup group, int index)[] {(BlizzardAttackStateGroup, 2), (LaserAltarEasyAttackStateGroup, 3), 
+                (FinisherHardOrEasierAttackStateGroup, 5)},
+            new (MonsterStateGroup group, int index)[] {(BackAttackStateGroup, 4)}
+        );
 
+        ModifySequence(AttackSequence1_SmallBlackHoleGroupSequence, [SneakAttackStateGroup],
+            new (MonsterStateGroup group, int index)[] {(LaserAltarEasyAttackStateGroup, 2), 
+                (LongerAttackStateGroup, 3), (FinisherHardOrEasierAttackStateGroup, 5)}, 
+            []
+        );
 
+        ModifySequence(AttackSequence1_QuickToBlizzardGroupSequence, [SneakAttackStateGroup],
+            new (MonsterStateGroup group, int index)[] {(BlizzardAttackStateGroup, 3), (FinisherHardOrEasierAttackStateGroup, 4)},
+            new (MonsterStateGroup group, int index)[] {(LaserAltarEasyAttackStateGroup, 1)}
+        );
 
-        InsertBackAttackGroupToSequence(AttackSequence1_GroupSequence, 4);
-        InsertBackAttackGroupToSequence(AttackSequence1_AltarGroupSequence, 4);
+        ModifySequence(AttackSequence1_FirstAttackGroupSequence, [SneakAttackStateGroup],
+            new (MonsterStateGroup group, int index)[] {(SneakAttackStateGroup, 1), (FinisherHardOrEasierAttackStateGroup, 3)},
+            new (MonsterStateGroup group, int index)[] {(LongerOrBlizardAttackStateGroup, 3)}
+        );
 
+        ModifySequence(SpecialHealthSequence, [SneakAttackStateGroup],
+            [], new (MonsterStateGroup group, int index)[] {(LongerOrBlizardAttackStateGroup, 2)}
+        );
 
+        // Phase 2 Sequence Attack Modifications
+        ModifySequence(AttackSequence2_Opening, [SneakAttack2StateGroup], [], new (MonsterStateGroup group, int index)[] {
+            (LaserAltarHardAttackStateGroup, 1), (BlizzardAttackStateGroup, 2), (QuickAttackStateGroup, 3),
+            (SmallBlackHoleMonsterStateGroup, 4), (LaserAltarEasyAttackStateGroup, 5), (DoubleTroubleAttackStateGroup, 6),
+            (DoubleTroubleAttackStateGroup, 7), (DoubleTroubleAttackStateGroup, 8), (HardAltarOrEasyFinisherAttackStateGroup, 9)
+        });
 
-        OverwriteAttackGroupInSequence(AttackSequence1_AltarGroupSequence, 2, LongerOrBlizardAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence1_FirstAttackGroupSequence, 3, LongerOrBlizardAttackStateGroup);
-        InsertAttackGroupToSequence(SpecialHealthSequence, 2, LongerOrBlizardAttackStateGroup);
+        ModifySequence(AttackSequence2, [SneakAttack2StateGroup], 
+            new (MonsterStateGroup group, int index)[] {(LaserAltarOrFinisherAttackStateGroup, 3)},
+            new (MonsterStateGroup group, int index)[] {(DoubleTroubleAttackStateGroup, 2), (DoubleTroubleAttackStateGroup, 4)}
+        );
 
-        OverwriteAttackGroupInSequence(AttackSequence1_SmallBlackHoleGroupSequence, 2, SwordOrLaserAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence1_SmallBlackHoleGroupSequence, 3, LongerAttackStateGroup);    
-        InsertAttackGroupToSequence(AttackSequence1_QuickToBlizzardGroupSequence, 1, SwordOrAltarAttackStateGroup);
+        ModifySequence(AttackSequence2_AltarGroupSequence, [SneakAttack2StateGroup],
+            new (MonsterStateGroup group, int index)[] {(LaserAltarHardAttackStateGroup, 1)},
+            new (MonsterStateGroup group, int index)[] {(BlizzardAttackStateGroup, 2)}
+        );
 
+        ModifySequence(AttackSequence2_SmallBlackHoleGroupSequence, [SneakAttack2StateGroup],
+            new (MonsterStateGroup group, int index)[] {(BackAttackStateGroup, 2), (LaserAltarHardAttackStateGroup, 3)},
+            []
+        );
 
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 1, LaserAltarHardAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 2, BlizzardAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 3, QuickAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 4, SmallBlackHoleMonsterStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 5, LaserAltarEasyAttackStateGroup);
+        ModifySequence(AttackSequence2_QuickToBlizzardGroupSequence, [SneakAttack2StateGroup],
+            new (MonsterStateGroup group, int index)[] {(LaserAltarOrFinisherAttackStateGroup, 4)},
+            new (MonsterStateGroup group, int index)[] {(BlizzardAttackStateGroup, 3)}
+        );;
 
-
-
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 6, DoubleTroubleAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 7, DoubleTroubleAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 8, DoubleTroubleAttackStateGroup);
-
-
-        AddAttackGroupToSequence(AttackSequence2_Opening, SneakAttack2StateGroup);
-
-        InsertAttackGroupToSequence(AttackSequence2_Opening, 9, HardAltarOrEasyFinisherAttackStateGroup);
-
-
-        AddAttackGroupToSequence(AttackSequence2, SneakAttack2StateGroup);
-        AddAttackGroupToSequence(AttackSequence2_AltarGroupSequence, SneakAttack2StateGroup);
-        AddAttackGroupToSequence(AttackSequence2_SmallBlackHoleGroupSequence, SneakAttack2StateGroup);
-        AddAttackGroupToSequence(AttackSequence2_QuickToBlizzardGroupSequence, SneakAttack2StateGroup);
-        AddAttackGroupToSequence(AttackSequence2_QuickToBlackHoleGroupSequence, SneakAttack2StateGroup);
-
-        InsertAttackGroupToSequence(AttackSequence2, 2, DoubleTroubleAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2, 4, DoubleTroubleAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence2, 5, HardAltarOrHardFinisherAttackStateGroup);
-
-        OverwriteAttackGroupInSequence(AttackSequence2_AltarGroupSequence, 1, LaserAltarHardAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_AltarGroupSequence, 2, BlizzardAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence2_AltarGroupSequence, 5, LaserAltarHardAttackStateGroup);
-        
-        OverwriteAttackGroupInSequence(AttackSequence2_SmallBlackHoleGroupSequence, 2, LaserAltarEasyAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence2_SmallBlackHoleGroupSequence, 5, HardAltarOrHardFinisherAttackStateGroup);
-
-        InsertAttackGroupToSequence(AttackSequence2_QuickToBlizzardGroupSequence, 3, BlizzardAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence2_QuickToBlizzardGroupSequence, 5, HardAltarOrHardFinisherAttackStateGroup);
-
-        InsertAttackGroupToSequence(AttackSequence2_QuickToBlackHoleGroupSequence, 2, LaserAltarHardAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_QuickToBlackHoleGroupSequence, 3, BigBlackHoleAttackStateGroup);
-        InsertAttackGroupToSequence(AttackSequence2_QuickToBlackHoleGroupSequence, 4, LongerAttackStateGroup);
-        OverwriteAttackGroupInSequence(AttackSequence2_QuickToBlackHoleGroupSequence, 5, HardAltarOrHardFinisherAttackStateGroup);
+        ModifySequence(AttackSequence2_QuickToBlackHoleGroupSequence, [SneakAttack2StateGroup], [],
+            new (MonsterStateGroup group, int index)[] {(LaserAltarHardAttackStateGroup, 2), 
+                (BigBlackHoleAttackStateGroup, 3), (LongerAttackStateGroup, 4)}
+        );
     }
 
-    private void OnDestroy() {
+    private void OnDestroy()
+    {
         // Make sure to clean up resources here to support hot reloading
         HPUpdated = false;
         phase2 = false;

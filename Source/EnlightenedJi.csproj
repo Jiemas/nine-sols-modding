@@ -39,6 +39,9 @@
         <Reference Include="I2">
             <HintPath>$(DllPath)/I2.dll</HintPath>
         </Reference>
+        <Reference Include="RubyTextMeshPro">
+            <HintPath>$(DLLPath)/RubyTextMeshPro.dll</HintPath>
+        </Reference>
     </ItemGroup>
 
     <ItemGroup>
