@@ -57,10 +57,14 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static Weight<MonsterState>[] Weights = new Weight<MonsterState>[17];
 
-    private static string[] Sequences1 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard" };
+    private static string[] SequenceStrings1 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard" };
+    private static MonsterStateGroupSequence[] Sequences1 =  new MonsterStateGroupSequence[4];
 
-    private static string[] Sequences2 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard", 
+    private static string[] SequenceStrings2 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard", 
                                             "_QuickToBlackHole", "_Phase2_OpeningBlackHole" };
+    private static MonsterStateGroupSequence[] Sequences2 =  new MonsterStateGroupSequence[7];
+
+    private static int Default = 0, WithAltar = 1, WithSmallBlackHole = 2, QuickToBlizzard = 3, QuickToBLackHole = 4, Opening = 5, Health = 6;
 
     private static string[] lore_quotes = [
       "IT'S TIME TO END THIS!",
@@ -508,7 +512,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     }
 
     public void AlterAttacks(){
-        if (AttackSequence1_FirstAttackGroupSequence.AttackSequence.Contains(SneakAttackStateGroup)) {
+        if (AttackSequence1_GroupSequence.AttackSequence.Contains(SneakAttackStateGroup)) {
             return;
         }
         phase2 = false;
