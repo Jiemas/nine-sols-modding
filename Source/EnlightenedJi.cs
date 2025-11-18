@@ -137,18 +137,18 @@ public class EnlightenedJi : BaseUnityPlugin {
     PostureBreakState JiStunState = null!;
 
     #region Attack Sequences MonsterStateGroupSequence
-    MonsterStateGroupSequence AttackSequence1_FirstAttackGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence1_GroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence1_AltarGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence1_SmallBlackHoleGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence1_QuickToBlizzardGroupSequence = null!;
-    MonsterStateGroupSequence SpecialHealthSequence = null!;
-    MonsterStateGroupSequence AttackSequence2_Opening = null!;
-    MonsterStateGroupSequence AttackSequence2_QuickToBlizzardGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence2 = null!;
-    MonsterStateGroupSequence AttackSequence2_AltarGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence2_SmallBlackHoleGroupSequence = null!;
-    MonsterStateGroupSequence AttackSequence2_QuickToBlackHoleGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence1_FirstAttackGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence1_GroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence1_AltarGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence1_SmallBlackHoleGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence1_QuickToBlizzardGroupSequence = null!;
+    // MonsterStateGroupSequence SpecialHealthSequence = null!;
+    // MonsterStateGroupSequence AttackSequence2_Opening = null!;
+    // MonsterStateGroupSequence AttackSequence2_QuickToBlizzardGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence2 = null!;
+    // MonsterStateGroupSequence AttackSequence2_AltarGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence2_SmallBlackHoleGroupSequence = null!;
+    // MonsterStateGroupSequence AttackSequence2_QuickToBlackHoleGroupSequence = null!;
     #endregion
 
     #region Attack Groups MonsterStateGroup
@@ -226,7 +226,7 @@ public class EnlightenedJi : BaseUnityPlugin {
             if (JiMonster.currentMonsterState == PhaseChangeState)
             {
                 phase2 = true;
-                OverwriteAttackGroupInSequence(SpecialHealthSequence, 5, SneakAttack2StateGroup);
+                OverwriteAttackGroupInSequence(Sequences2[Health], 5, SneakAttack2StateGroup);
                 HandlePhaseTransitionText();
             }
             phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
@@ -293,7 +293,7 @@ public class EnlightenedJi : BaseUnityPlugin {
             (randomNum % 2 == 0 && GetIndices([11, 5]).Contains(JiMonster.currentMonsterState)))
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.5f;
-        } else if (GetCurrentSequence() == AttackSequence1_QuickToBlizzardGroupSequence &&
+        } else if (GetCurrentSequence() == Sequences1[QuickToBlizzard] &&
             JiMonster.currentMonsterState == BossGeneralStates[7])
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.5f;
@@ -339,12 +339,12 @@ public class EnlightenedJi : BaseUnityPlugin {
         
         // Blizzard Attack Speed up
         } else if (JiMonster.currentMonsterState == BossGeneralStates[7] &&
-            GetCurrentSequence() != AttackSequence2_QuickToBlizzardGroupSequence) 
+            GetCurrentSequence() != Sequences2[QuickToBlizzard]) 
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.65f;
 
         // Opening Sequence Sword Attack Speed Up
-        } else if (GetCurrentSequence() == AttackSequence2_Opening &&
+        } else if (GetCurrentSequence() == Sequences2[Opening] &&
             GetIndices([11, 12, 2, 9]).Contains(JiMonster.currentMonsterState))
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 0.25f;
@@ -424,28 +424,29 @@ public class EnlightenedJi : BaseUnityPlugin {
             $"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)")
             .GetComponent<MonsterStateGroupSequence>();
 
-        AttackSequence1_FirstAttackGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_FirstAttack_WithoutDivination");
-        AttackSequence1_GroupSequence = getGroupSequence1("MonsterStateGroupSequence1");
-        AttackSequence1_AltarGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithAltar");
-        AttackSequence1_SmallBlackHoleGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithSmallBlackHole");
-        AttackSequence1_QuickToBlizzardGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_QuickToBlizzard");
-        SpecialHealthSequence = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)").GetComponent<MonsterStateGroupSequence>();
+        // AttackSequence1_FirstAttackGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_FirstAttack_WithoutDivination");
+        // AttackSequence1_GroupSequence = getGroupSequence1("MonsterStateGroupSequence1");
+        // AttackSequence1_AltarGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithAltar");
+        // AttackSequence1_SmallBlackHoleGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithSmallBlackHole");
+        // AttackSequence1_QuickToBlizzardGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_QuickToBlizzard");
+        // SpecialHealthSequence = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)").GetComponent<MonsterStateGroupSequence>();
         
-        AttackSequence2_Opening = getGroupSequence2("MonsterStateGroupSequence1_Phase2_OpeningBlackHole");
-        AttackSequence2_QuickToBlizzardGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlizzard");
-        AttackSequence2 = getGroupSequence2("MonsterStateGroupSequence1");
-        AttackSequence2_AltarGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithAltar");
-        AttackSequence2_SmallBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithSmallBlackHole");
-        AttackSequence2_QuickToBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlackHole");
+        // AttackSequence2_Opening = getGroupSequence2("MonsterStateGroupSequence1_Phase2_OpeningBlackHole");
+        // AttackSequence2_QuickToBlizzardGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlizzard");
+        // AttackSequence2 = getGroupSequence2("MonsterStateGroupSequence1");
+        // AttackSequence2_AltarGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithAltar");
+        // AttackSequence2_SmallBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithSmallBlackHole");
+        // AttackSequence2_QuickToBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlackHole");
     
-        SmallBlackHoleMonsterStateGroup = getGroup("MonsterStateGroup_SmallBlackHole(Attack10)");
-        LongerAttackStateGroup = AttackSequence1_GroupSequence.AttackSequence[3];
-        BlizzardAttackStateGroup = AttackSequence1_QuickToBlizzardGroupSequence.AttackSequence[1];
-        QuickAttackStateGroup = AttackSequence1_FirstAttackGroupSequence.AttackSequence[0];
-        LaserAltarEasyAttackStateGroup = AttackSequence1_AltarGroupSequence.AttackSequence[1];
-        FinisherEasierAttackStateGroup = AttackSequence1_AltarGroupSequence.AttackSequence[4];
-        BigBlackHoleAttackStateGroup = AttackSequence2_Opening.AttackSequence[0];
-        FinisherHardOrEasierAttackStateGroup = AttackSequence2.AttackSequence[5];
+        SmallBlackHoleMonsterStateGroup = Sequences1[WithSmallBlackHole].AttackSequence[1];
+        LongerAttackStateGroup = Sequences1[Default].AttackSequence[3];
+        BlizzardAttackStateGroup = Sequences1[QuickToBlizzard].AttackSequence[1];
+        QuickAttackStateGroup = Sequences1[Default].AttackSequence[1];
+        LaserAltarEasyAttackStateGroup = Sequences1[WithAltar].AttackSequence[1];
+        FinisherEasierAttackStateGroup = Sequences1[WithAltar].AttackSequence[4];
+        BigBlackHoleAttackStateGroup = Sequences2[Opening].AttackSequence[0];
+        FinisherHardOrEasierAttackStateGroup = Sequences2[Default].AttackSequence[5];
+
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
         
@@ -525,7 +526,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     }
 
     public void AlterAttacks(){
-        if (AttackSequence1_GroupSequence.AttackSequence.Contains(SneakAttackStateGroup)) {
+        if (Sequences1[Default].AttackSequence.Contains(SneakAttackStateGroup)) {
             return;
         }
         phase2 = false;
@@ -565,11 +566,6 @@ public class EnlightenedJi : BaseUnityPlugin {
             new (MonsterStateGroup group, int index)[] {(BlizzardAttackStateGroup, 3), (FinisherHardOrEasierAttackStateGroup, 4)},
             new (MonsterStateGroup group, int index)[] {(LaserAltarEasyAttackStateGroup, 1)}
         );
-
-        // ModifySequence(AttackSequence1_FirstAttackGroupSequence, [SneakAttackStateGroup],
-        //     new (MonsterStateGroup group, int index)[] {(SneakAttackStateGroup, 1), (FinisherHardOrEasierAttackStateGroup, 3)},
-        //     new (MonsterStateGroup group, int index)[] {(LongerOrBlizardAttackStateGroup, 3)}
-        // );
 
         ModifySequence(Health, 2, [SneakAttackStateGroup],
             [], new (MonsterStateGroup group, int index)[] {(LongerOrBlizardAttackStateGroup, 2)}
