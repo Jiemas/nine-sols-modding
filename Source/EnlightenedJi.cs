@@ -53,18 +53,25 @@ public class EnlightenedJi : BaseUnityPlugin {
         "[16]Divination JumpKicked"
     ];
 
-    private static BossGeneralState[] BossGeneralStates = new BossGeneralState[17];
+    private static BossGeneralState[] BossGeneralStates = new BossGeneralState[19];
 
     private static Weight<MonsterState>[] Weights = new Weight<MonsterState>[17];
 
     private static string[] SequenceStrings1 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard" };
-    private static MonsterStateGroupSequence[] Sequences1 =  new MonsterStateGroupSequence[4];
-
     private static string[] SequenceStrings2 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard", 
                                             "_QuickToBlackHole", "_Phase2_OpeningBlackHole" };
+
+    private static MonsterStateGroupSequence[] Sequences1 =  new MonsterStateGroupSequence[4];
     private static MonsterStateGroupSequence[] Sequences2 =  new MonsterStateGroupSequence[7];
 
-    private static int Default = 0, WithAltar = 1, WithSmallBlackHole = 2, QuickToBlizzard = 3, QuickToBlackHole = 4, Opening = 5, Health = 6;
+    private static int Default = 0, WithAltar = 1, WithSmallBlackHole = 2, QuickToBlizzard = 3, 
+                        QuickToBlackHole = 4, Opening = 5, Health = 6;
+
+    private static int Hurt = 17, BigHurt = 18;
+
+    private static MonsterStateGroup[] Groups = new MonsterStateGroup[19];
+    int SmallBlackHole = 0, LongerAttack = 1, Blizzard = 2, QuickAttack = 3, EasyLaserAltar = 4, 
+        EasyFinisher = 5, BigBlackHole = 6, EasyOrHardFinisher = 7;
 
     private static string[] lore_quotes = [
       "IT'S TIME TO END THIS!",
@@ -97,12 +104,12 @@ public class EnlightenedJi : BaseUnityPlugin {
     
     private static string[] meme_quotes = [
       "TIS BUT A SCRATCH!",
-      "NAH, I'D WIN",
+      "NAH, I'D WIN.",
       "WHAT'S WRONG YI, NO MAIDENS?",
       "YI, WHAT IS A CAT?",
-      "WHICH DO YOU PREFER YI? TALL OR SHORT ME?",
-      "EIGONG TRIED TO REPLICATE MY IMMORTALITY. DON'T TELL ME YOU ARE THINKING OF TAKING MY GROWTH ABILITY...",
-      "PARRY MY BLACK HOLES? WHAT'S NEXT, A RHIZOMATIC BOMB? RIDICULOUS!",
+      "WHICH DO YOU PREFER YI? YOUNG OR ADULT ME?",
+      "EIGONG TRIED TO COPY MY IMMORTALITY. DON'T TELL ME YOU ARE THINKING OF TAKING MY GROWTH ABILITY...",
+      "PARRYING MY BLACK HOLES? WHAT'S NEXT, A RHIZOMATIC BOMB? RIDICULOUS!",
       "THE RECORD SHOWS. I TOOK THE BLOWS. AND DID IT MY WAY...",
       "...ARE YOU TRYING TO SHAVE ME, YI?!",
       "HOW MANY TIMES DOES THIS MAKE IT NOW?",
@@ -114,7 +121,7 @@ public class EnlightenedJi : BaseUnityPlugin {
       "THIS FIGHT WAS EASIER BEFORE? SURELY THAT IS JUST YOUR MEMORY FAILING YOU!",
       "ARE YOU HAVING A BAD TIME?",
       "REMEMBER, ITS OKAY TO TAKE BREAKS!",
-      "SURE, YOU CAN BEAT ME. BUT CAN YOU DO IT HITLESS?"
+      "YOU MAY BE ABLE TO BEAT ME, BUT CAN YOU DO IT HITLESS?"
     ];
 
     private bool HPUpdated = false;
@@ -129,27 +136,7 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     System.Random random = new System.Random();
 
-    // #region Attacks BossGeneralState
-    BossGeneralState HurtBossGeneralState = null!;
-    BossGeneralState BigHurtBossGeneralState = null!;
-    // #endregion
-
     PostureBreakState JiStunState = null!;
-
-    #region Attack Sequences MonsterStateGroupSequence
-    // MonsterStateGroupSequence AttackSequence1_FirstAttackGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence1_GroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence1_AltarGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence1_SmallBlackHoleGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence1_QuickToBlizzardGroupSequence = null!;
-    // MonsterStateGroupSequence SpecialHealthSequence = null!;
-    // MonsterStateGroupSequence AttackSequence2_Opening = null!;
-    // MonsterStateGroupSequence AttackSequence2_QuickToBlizzardGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence2 = null!;
-    // MonsterStateGroupSequence AttackSequence2_AltarGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence2_SmallBlackHoleGroupSequence = null!;
-    // MonsterStateGroupSequence AttackSequence2_QuickToBlackHoleGroupSequence = null!;
-    #endregion
 
     #region Attack Groups MonsterStateGroup
     MonsterStateGroup SneakAttackStateGroup = new MonsterStateGroup();
@@ -261,8 +248,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         if (!JiMonster) return;
 
         if (GetIndices([10, 16]).Contains(JiMonster.currentMonsterState) || 
-        JiMonster.currentMonsterState == Engaging || JiMonster.currentMonsterState == HurtBossGeneralState ||
-        JiMonster.currentMonsterState == BigHurtBossGeneralState || JiMonster.currentMonsterState == JiStunState) 
+        JiMonster.currentMonsterState == Engaging || JiMonster.currentMonsterState == BossGeneralStates[Hurt] ||
+        JiMonster.currentMonsterState == BossGeneralStates[BigHurt] || JiMonster.currentMonsterState == JiStunState) 
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 3;
         } else if (JiMonster.currentMonsterState == BossGeneralStates[15]) 
@@ -423,21 +410,22 @@ public class EnlightenedJi : BaseUnityPlugin {
         Sequences2[Health] = GameObject.Find(
             $"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)")
             .GetComponent<MonsterStateGroupSequence>();
-
-        // AttackSequence1_FirstAttackGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_FirstAttack_WithoutDivination");
-        // AttackSequence1_GroupSequence = getGroupSequence1("MonsterStateGroupSequence1");
-        // AttackSequence1_AltarGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithAltar");
-        // AttackSequence1_SmallBlackHoleGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_WithSmallBlackHole");
-        // AttackSequence1_QuickToBlizzardGroupSequence = getGroupSequence1("MonsterStateGroupSequence1_QuickToBlizzard");
-        // SpecialHealthSequence = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)").GetComponent<MonsterStateGroupSequence>();
         
-        // AttackSequence2_Opening = getGroupSequence2("MonsterStateGroupSequence1_Phase2_OpeningBlackHole");
-        // AttackSequence2_QuickToBlizzardGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlizzard");
-        // AttackSequence2 = getGroupSequence2("MonsterStateGroupSequence1");
-        // AttackSequence2_AltarGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithAltar");
-        // AttackSequence2_SmallBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_WithSmallBlackHole");
-        // AttackSequence2_QuickToBlackHoleGroupSequence = getGroupSequence2("MonsterStateGroupSequence1_QuickToBlackHole");
-    
+        (int sequence, int index)[] ExistingGroupPairs = new (int sequence, int index)[] 
+        {
+            (WithSmallBlackHole, 1), (Default, 3), (QuickToBlizzard, 1), (Default, 1), (WithAltar, 1), 
+            (WithAltar, 4), (Opening, 0), (Default, 5)
+        };
+
+        int j = 0;
+        foreach ((int sequence, int index) in ExistingGroupPairs)
+        {
+            // Groups[j++] = Sequences1[sequence].AttackSequence[index];
+        }
+
+        int SmallBlackHole = 0, LongerAttack = 1, Blizzard = 2, QuickAttack = 3, EasyLaserAltar = 4, 
+            EasyFinisher = 5, BigBlackHole = 6, EasyOrHardFinisher = 7;
+
         SmallBlackHoleMonsterStateGroup = Sequences1[WithSmallBlackHole].AttackSequence[1];
         LongerAttackStateGroup = Sequences1[Default].AttackSequence[3];
         BlizzardAttackStateGroup = Sequences1[QuickToBlizzard].AttackSequence[1];
@@ -450,16 +438,20 @@ public class EnlightenedJi : BaseUnityPlugin {
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
         
-        HurtBossGeneralState = GameObject.Find($"{jiBossPath}States/HurtState/").GetComponent<BossGeneralState>();
-        BigHurtBossGeneralState = GameObject.Find($"{jiBossPath}States/Hurt_BigState").GetComponent<BossGeneralState>();
+        BossGeneralStates[Hurt] = GameObject.Find($"{jiBossPath}States/HurtState/").GetComponent<BossGeneralState>();
+        BossGeneralStates[BigHurt] = GameObject.Find($"{jiBossPath}States/Hurt_BigState").GetComponent<BossGeneralState>();
         
         Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
 
         attackSequenceModule = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/").GetComponent<AttackSequenceModule>();
 
-        BossName = GameObject.Find("GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName").GetComponent<RubyTextMeshProUGUI>();
+        BossName = GameObject.Find(
+            "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
+            .GetComponent<RubyTextMeshProUGUI>();
 
-        PhaseTransitionText = GameObject.Find(GeneralBossFightPath + "[CutScene]BossAngry_Cutscene/BubbleRoot/SceneDialogueNPC/BubbleRoot/DialogueBubble/Text").GetComponent<RubyTextMeshPro>();
+        PhaseTransitionText = GameObject.Find(GeneralBossFightPath + 
+            "[CutScene]BossAngry_Cutscene/BubbleRoot/SceneDialogueNPC/BubbleRoot/DialogueBubble/Text")
+            .GetComponent<RubyTextMeshPro>();
 
     }
 
@@ -530,7 +522,7 @@ public class EnlightenedJi : BaseUnityPlugin {
             return;
         }
         phase2 = false;
-        HurtBossGeneralState.enabled = false;
+        // HurtBossGeneralState.enabled = false; TODO CHECK IF THERE IS PROPERTY THAT ACCOUNTS FOR HURT STATES IN NEW STATE GROUPS
         // Custom Attack Groups
         SneakAttackStateGroup = CreateMonsterStateGroup([10, 11, 12, 13, 14], "MonsterStateGroup_SneakAttack(Attack 10/11/12/13/14)");
         BackAttackStateGroup = CreateMonsterStateGroup([5, 9], "MonsterStateGroup_BackAttack(Attack 5/9)");
