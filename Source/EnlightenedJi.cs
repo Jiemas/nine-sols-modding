@@ -216,6 +216,11 @@ public class EnlightenedJi : BaseUnityPlugin {
                 phase2 = true;
                 OverwriteAttackGroupInSequence(Sequences2[Health], 5, Groups[SneakAttack2]);
                 HandlePhaseTransitionText();
+            } else if (JiMonster.currentMonsterState == BossGeneralStates[1])
+            {
+                HurtInterrupt.enabled = true;
+            } else {
+                HurtInterrupt.enabled = false;
             }
             phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
             ToastManager.Toast(GetCurrentSequence());
@@ -513,7 +518,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         // HurtBossGeneralState.enabled = false; TODO CHECK IF THERE IS PROPERTY THAT ACCOUNTS FOR HURT STATES IN NEW STATE GROUPS
         // BossGeneralStates[Hurt].enabled = false;
         // BossGeneralStates[BigHurt].enabled = false;
-        HurtInterrupt.enabled = false;
+        // HurtInterrupt.enabled = false;
 
         // Custom Attack Groups
         int i = ExistingGroupPairs.Length + 2;
