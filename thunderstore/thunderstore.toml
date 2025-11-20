@@ -4,17 +4,16 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "Jiemas"
 name = "EnlightenedJi"
-versionNumber = "0.1.0"
+versionNumber = "1.0.0"
 description = "Mods Ji to be harder"
-websiteUrl = "link to the git repo"
+websiteUrl = "https://github.com/Jiemas/nine-sols-modding"
 containsNsfwContent = false
 
 [package.dependencies]
 "BepInEx-BepInExPack" = "5.4.2100"
-"ninesolsmodding-NineSolsAPI" = "0.0.2"
 
 [build]
-icon = "./icon.png"
+icon = "./428px-JiP_young.png"
 readme = "./README.md"
 outdir = "./build"
 
