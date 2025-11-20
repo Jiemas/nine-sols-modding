@@ -95,6 +95,9 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - Avoid trying to heal in the middle of an attack sequence unless the Quick Dose Jade is equipped
 - There is enough time to perform unbounded counters on both crimson attacks, even in their accelerated state
 
+## Showcase
+- Youtube Video: [NineSols Enlightened Ji Mod, V1 0](https://www.youtube.com/watch?v=ysJj-bbPxj8)
+
 ## Acknowledgements
 - Code was written through heavy reference of MicheliniDev's Eigong Prime Mod, KaitoMajima's Promised Eigong Mod, and Jakob Hellermann's Example Mod.
 - The Unity Explorer Mod was essential to figuring out object paths and attack logic

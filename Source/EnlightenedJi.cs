@@ -5,8 +5,8 @@ using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-// using NineSolsAPI;
-// using NineSolsAPI.Utils;
+using NineSolsAPI;
+using NineSolsAPI.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -99,8 +99,6 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static string temp = "";
 
-    private static int updateCounter = 0;
-    private static int delay = 0;
     private static int randomNum = 0;
     private static int phasesFromBlackHole = 0;
     private static bool firstMessage = true;
@@ -114,7 +112,7 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static AttackSequenceModule attackSequenceModule = null!;
 
-    private static RubyTextMeshProUGUI BossName = null!;
+    // private static RubyTextMeshProUGUI BossName = null!;
     private static RubyTextMeshPro PhaseTransitionText = null!;
 
     private static MonsterHurtInterrupt HurtInterrupt = null!;
@@ -123,29 +121,29 @@ public class EnlightenedJi : BaseUnityPlugin {
       "IT'S TIME TO END THIS!",
       "HEROES ARE FORGED IN AGONY, YI!",
       "DO YOU KNOW WHAT IT IS LIKE TO LEAVE YOUR LOVED ONES SO FAR BEHIND? I SUPPOSE YOU DO...",
-      "I THANK YOU YI, MY CURTAIN CALL WILL BE MUCH GRANDER THAN I COULD HAVE EVER IMAGINED.",
+      "THANK YOU YI, MY CURTAIN CALL WILL BE FAR GRANDER THAN I COULD HAVE EVER IMAGINED.",
       "SURELY THIS IS NOT ENOUGH TO KILL YOU?",
       "THE END DRAWS NEAR, WILL IT BE MINE OR YOURS?",
-      "THAT PIPE OF YOURS, I WONDER HOW FAR YOU COULD HAVE GOTTEN WITHOUT IT?",
-      "THE THINGS YOU DO FOR POWER, YI! SURELY APE MAN FLUIDS CANNOT BE THAT GOOD...",
+      "I WONDER HOW FAR YOU COULD HAVE GOTTEN WITHOUT THAT PIPE OF YOURS?",
+      "THE THINGS YOU DO FOR POWER! SURELY APE MAN FLUIDS CANNOT BE THAT GOOD...",
       "ENDURE WHAT OTHERS CANNOT!",
-      "ONLY NOW DO I REALIZE, LEAR ONCE SPOKE OF YOU. A MIGHTY FIANGSHI ALBEIT OF SHORT STATURE.",
-      "LEAR WAS RIGHT AFTERALL, WAS HE NOT? TIANHUO, A PRODUCT OF SOLARIAN TECHNOLOGY AND ARROGANCE...",
+      "LEAR ONCE SPOKE OF YOU, LONG AGO. A MIGHTY FIANGSHI ALBEIT OF SHORT STATURE...",
+      "WAS NOT LEAR RIGHT AFTERALL? TIANHUO, A PRODUCT OF SOLARIAN TECHNOLOGY AND ARROGANCE...",
       "I ENVY YOU, YI. TO STILL HAVE LOVED ONES TO MOURN YOUR LOSS...",
       "WHY AM I ATTACKING YOU, YI? HOW ELSE WILL I GET MY CURTAIN CALL?",
       "I THOUGHT MY END WOULD BE GRAND... AND YET YOUR FIREWORK WILL BE THE GRANDEST OF THEM ALL",
-      "THIS GROTTO, YOU WILL TAKE CARE OF IT FOR ME, WILL YOU NOT? ...HAHA, I ONLY JEST.",
+      "WON'T YOU CARE FOR THIS GROTTO FOR ME AFTERWARDS? ...HAHA, I ONLY JEST.",
       "MY LONG AWAITED DEATH IS UPON US. I HOPE YOU ENJOY MY SWAN SONG... OR SURVIVE IT RATHER.",
       "THAT HEART OF YOURS IS JUST AS MUCH A MYSTERY AS MY OWN ABILITIES. FUSANG TRULY CHERISHES YOU...",
       "I DO NOT BLAME EIGONG. DESTINY WOULD HAVE SIMPLY CHOSEN ANOTHER AGENT.",
       "YOU GAVE THE SHEET MUSIC TO AN APE MAN CHILD? DEATH TRULY HAS CHANGED YOU.",
       "YOU ARE REARING AN APE MAN CHILD? SURELY IT DOES NOT KNOW WHAT ELSE YOU HAVE DONE?",
-      "TO THINK, THE FUTURE OF THE SOLARIANS IS TO BE MERE PETS TO THE APE MEN. DESTINY TRULY HAS A SENSE OF HUMOUR!",
+      "TO THINK, OUR FUTURE IS TO BE MERE PETS TO THE APE MEN. DESTINY TRULY HAS A SENSE OF HUMOUR!",
       "COME AND BEHOLD, MY FINAL MOMENTS!",
       "I AM AWARE, THAT ALL OF THIS AROUND US, THIS IS JUST A MEMORY.",
       "IT IS QUITE EMBARRASSING, IS IT NOT? THIS RIDICULOUS TITLE OF MINE...",
-      "I AM QUITE GLAD I DECIDED TO REREAD THE HEXAGRAMS. OTHERWISE, I WOULD HAVE HELD BACK FAR MORE THAN I NEEDED TO!",
-      "SURELY, YOU MUST BE AWARE, THIS FIGHT? A SIMPLE PASTTIME FOR BEINGS FAR GREATER THAN WE COULD IMAGINE."
+      "I AM GLAD I  REREAD THE HEXAGRAMS. OTHERWISE, I WOULD HAVE HELD BACK FAR MORE THAN I NEEDED TO!",
+      "YOU MUST BE AWARE, THIS FIGHT? A SIMPLE PASTTIME FOR BEINGS FAR GREATER THAN WE COULD IMAGINE."
     ];
     
     private static string[] meme_quotes = [
@@ -179,17 +177,34 @@ public class EnlightenedJi : BaseUnityPlugin {
         harmony = Harmony.CreateAndPatchAll(typeof(EnlightenedJi).Assembly);
 
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+        SceneManager.sceneLoaded += OnSceneLoaded;
 
         JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
         JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is double this value)");
     }
 
-    public void Update() {
-        if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "A10_S5_Boss_Jee")
+        {
+            phase2 = false;
             GetAttackGameObjects();
             AlterAttacks();
             JiHPChange();
-            JiSpeedChange();
+        }
+    }
+
+    private IEnumerator delayTitleChange()
+    {
+        yield return new WaitForSeconds(1f);
+        RubyTextMeshProUGUI BossName = GameObject.Find(
+            "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
+            .GetComponent<RubyTextMeshProUGUI>();
+        BossName.text = "The Kunlun Immortal";
+    }
+
+    public void Update() {
+        if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
             HandleStateChange();
         } 
     }
@@ -198,27 +213,19 @@ public class EnlightenedJi : BaseUnityPlugin {
     {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
 
-        if (JiMonster.currentMonsterState == PhaseChangeState) {
-            if (delay < 100)
-            {
-                delay++;
-            }
-            else {
-                BossName.text = "The Kunlun Immortal";
-            }
-        } else {
-            delay = 0;
-        }
-
-        if (JiMonster && temp != JiMonster.currentMonsterState.ToString())
+        if (JiMonster is not null && temp != JiMonster.currentMonsterState.ToString())
         {
             temp = JiMonster.currentMonsterState.ToString();
             randomNum = random.Next();
+
+            JiSpeedChange();
+
             if (JiMonster.currentMonsterState == PhaseChangeState)
             {
                 phase2 = true;
                 OverwriteAttackGroupInSequence(Sequences2[Health], 6, Groups[SneakAttack2]);
                 HandlePhaseTransitionText();
+                StartCoroutine(delayTitleChange());
             } else if (JiMonster.currentMonsterState == BossGeneralStates[1])
             {
                 HurtInterrupt.enabled = true;
@@ -226,9 +233,6 @@ public class EnlightenedJi : BaseUnityPlugin {
                 HurtInterrupt.enabled = false;
             }
             phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
-            // ToastManager.Toast(GetCurrentSequence());
-            // ToastManager.Toast(JiMonster.currentMonsterState);
-            // ToastManager.Toast("");
         }
     }
 
@@ -304,6 +308,14 @@ public class EnlightenedJi : BaseUnityPlugin {
         return true;
     }
 
+    private IEnumerator tempLaserAcceleration()
+    {
+        var JiMonster = MonsterManager.Instance.ClosetMonster;
+        JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 1.65f;
+        yield return new WaitForSeconds(1.25f);
+        // JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
+    }
+
     private bool JiSpeedChangePhase2() {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
 
@@ -318,20 +330,10 @@ public class EnlightenedJi : BaseUnityPlugin {
             }
 
         // Hard Altar Attack Speed Up
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[4] && phasesFromBlackHole > 6) 
+        } else if (JiMonster.currentMonsterState == BossGeneralStates[4])
         {
-            if (phasesFromBlackHole > 6)
-            {
-                updateCounter++;
-                if (updateCounter < 500) {
-                    JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 1.65f;
-                } else {
-                    updateCounter = 0;
-                }    
-            } else {
-                JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value - 0.1f;
-            }
-        
+            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + 1.65f;
+
         // Blizzard Attack Speed up
         } else if (JiMonster.currentMonsterState == BossGeneralStates[7]) 
         {
@@ -400,6 +402,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         jiAttackSequences2Path = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateSequence_Phase2/";
         jiAttackGroupsPath = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateGroupDefinition/";
 
+        Logger.LogInfo("Getting Game Objects");
+
         // Gathering BossGeneralStates & Other States
         for (int i = 1; i < Attacks.Length; i++)
         {
@@ -411,6 +415,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
         Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
+
+        Logger.LogInfo("Got BossGeneralStates");
 
         // Gathering MonsterGroupStateSequences
         for (int i = 0; i < SequenceStrings1.Length; i++)
@@ -426,6 +432,8 @@ public class EnlightenedJi : BaseUnityPlugin {
             $"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)")
             .GetComponent<MonsterStateGroupSequence>();
 
+        Logger.LogInfo("Got MonsterGroupStateSequences");
+
         // Gathering existing MonsterGroupState
         int j = 0;
         foreach ((int sequence, int index) in ExistingGroupPairs)
@@ -435,15 +443,26 @@ public class EnlightenedJi : BaseUnityPlugin {
         Groups[BigBlackHole] = Sequences2[Opening].AttackSequence[0];
         Groups[EasyOrHardFinisher] = Sequences2[Default].AttackSequence[5];
 
+        Logger.LogInfo("Got MonsterGroupStates");
+
         // Gathering Miscellaneous Object
         attackSequenceModule = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/").GetComponent<AttackSequenceModule>();
-        BossName = GameObject.Find(
-            "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
-            .GetComponent<RubyTextMeshProUGUI>();
+
+        // BossName = GameObject.Find(
+        //     "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
+        //     .GetComponent<RubyTextMeshProUGUI>();
+
+        Logger.LogInfo("Got BossName");
+        
         PhaseTransitionText = GameObject.Find(GeneralBossFightPath + 
             "[CutScene]BossAngry_Cutscene/BubbleRoot/SceneDialogueNPC/BubbleRoot/DialogueBubble/Text")
             .GetComponent<RubyTextMeshPro>();
+
+        Logger.LogInfo("Got Phase Transition Text");
+        
         HurtInterrupt = GameObject.Find($"{jiBossPath}MonsterCore/Animator(Proxy)/Animator/LogicRoot/HurtInterrupt").GetComponent<MonsterHurtInterrupt>();
+
+        Logger.LogInfo("Got attack game objects");
     }
 
     private void OverwriteAttackGroupInSequence(MonsterStateGroupSequence sequence, int index, MonsterStateGroup newGroup)
@@ -516,10 +535,6 @@ public class EnlightenedJi : BaseUnityPlugin {
             return;
         }
         phase2 = false;
-        // HurtBossGeneralState.enabled = false; TODO CHECK IF THERE IS PROPERTY THAT ACCOUNTS FOR HURT STATES IN NEW STATE GROUPS
-        // BossGeneralStates[Hurt].enabled = false;
-        // BossGeneralStates[BigHurt].enabled = false;
-        // HurtInterrupt.enabled = false;
 
         // Custom Attack Groups
         int i = ExistingGroupPairs.Length + 2;
@@ -591,8 +606,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         // Make sure to clean up resources here to support hot reloading
         HPUpdated = false;
         phase2 = false;
-        updateCounter = 0;
         firstMessage = true;
+        SceneManager.sceneLoaded -= OnSceneLoaded;
         harmony.UnpatchSelf();
     }
 }
