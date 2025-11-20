@@ -1,4 +1,100 @@
-# Nine Sols Enlightened Ji
+# Enlightened Ji
 
-Write a description of your mod here, it will be displayed on thunderstore.
-Remember to update the icon.png to something representing your mod.
+>**"Ji decided to read the hexagrams one last time and learned he did not need to hold back."**
+
+A mod that makes Ji harder by increasing health, attack sequence length, and move variety. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
+
+# Installation
+Can use a mod manager of your choice or manual installation.
+More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols.wiki.gg/wiki/Community:Modding).
+
+# Changes
+## General
+- Phase 1 HP increased to 6500
+- Phase 2 HP increased to 10750
+- Animation speed increased by 20% generally. All further speed increases are in addition to this 20% increase.
+- You can install BepinExConfigurationManager to modify the HP and move speed
+- Included attacks originally only available in phase 2 into phase 1
+- Minimized time Ji is vulnerable to attack
+- Disabled hurt interrupt except during divination
+- Increased Ji's speed of deploying altars (Health, Lasers, Black Holes)
+- Every attack sequence now ends with a "sneak attack" that may be an accelerated sword attack, laser altar, black hole, or crimson attack
+
+## Phase 1
+- Changed boss title from Ji to Enlightened Ji
+- All attack sequences end with 2 crimson attacks and a sneak attack
+- Chance for blizzard attack, specific sword attacks, and crimson attacks to be accelerated
+- Small chance for any attack to be accelerated
+
+### Sword Attack Sequence
+- Modified to now be 4 flying sword attacks
+
+### Altar Attack Sequence
+- Modified to now be a easy laser altar, small black hole, easy laser altar again, and a sword attack
+
+### Small Black Hole Attack Sequence
+- Modified to now be a small black hole, easy laser altar, blizzard, and a sword attack
+
+### Blizzard Attack Sequence
+- Modified to now be an easy laser altar, blizzard, a sword attack, and a blizzard again
+
+## Phase 2
+- Boss title changes from Enlightened Ji to The Kunlun Immortal
+- All attack sequences end with a hard laser altar, 3 crimson attacks, and a sneak attack
+- Increased chance for blizzard attack, specific sword attacks, and crimson attacks to be accelerated (even more than phase 1)
+- Chance for any attack to be accelerated
+- Big Black Hole attack is greatly accelerated
+- Placement of hard laser altar is accelerated
+
+### Opening
+- Modified to be a sequence of 17 attacks that is every common combo usually experienced during phase 2
+- Getting through this means you can probably get through phase 2
+
+### Sword Attack Sequence
+- Modified to now be 4 flying sword attacks
+
+### Altar Attack Sequence
+- Modified to now be a hard laser altar, blizzard, and 2 long sword attacks
+
+### Small Black Hole Attack Sequence
+- Modified now to be a small black hole, long sword attack, hard laser altar, and blizzard
+- This attack sequence contains probably the hardest of the common combos
+
+### Blizard Attack Sequence
+- Modified to now be a blizzard, quick sword attack, blizzard again, and quick sword attack again
+
+### Big Black Hole Attack Sequence
+- Modified to now be a big black hole, hard laser altar, big black hole again, and long sword attack
+
+### Health Altar Attack Sequence
+- Can occur in both phases
+- Once this sequence ends, it transitions to a random attack sequence
+- Modified to now be a crimson attack or hard laser altar, big black hole, 2 long sword attacks, and a sneak attack
+- This sequence does not end with the usual crimson, sneak attack combo
+
+## Phase Transition
+- Increased variety of messages that can appear during phase transition
+- None of the messages are canon, just something I can imagine Ji saying
+- Small chance for nonsensical messages
+
+## Known Issues
+- A flying sword can rarely move harmlessly through Yi, not causing damage or giving Yi a Qi charge
+- Yi can rarely take damage from seemingly nowhere
+   - I suspect this is either due to the increased animation speed causing hitbox issues or my custom attack groups somehow causing Ji to launch 2 attacks simultaneously, one visible and one invisible
+   - This issue most commonly occurs while near an altar (Laser or Black Hole) and Ji launches an attack
+   - While not frequent, this can be a run-ender, especially when on low health or attempting hitless
+   - I am working on identifying and fixing this issue
+
+## Tips
+- You can and should unbounded counter black holes. This prevents them from damaging Yi.
+   - Note that if the black hole has suddenly gone halfway into the ground, it can damage Yi again even if it has been unbounded countered
+- Being airborne during fast blizzard attacks allows for parries without needing to rapidly change orientation
+- Swift Descent Jade is especially useful in this fight as there are many attacks that require careful positioning and dashing
+- A consistent ranged attack is helpful for destroying laser altars too far away when Yi's movement is prevented by a black hole
+- Ji is not stunned by a 5 qi charge full control unless while doing divination
+- Avoid trying to heal in the middle of an attack sequence unless the Quick Dose Jade is equipped
+- There is enough time to perform unbounded counters on both crimson attacks, even in their accelerated state
+
+## Acknowledgements
+- Code was written through heavy reference of MicheliniDev's Eigong Prime Mod, KaitoMajima's Promised Eigong Mod, and Jakob Hellermann's Example Mod.
+- The Unity Explorer Mod was essential to figuring out object paths and attack logic

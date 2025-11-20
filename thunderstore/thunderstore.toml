@@ -13,7 +13,7 @@ containsNsfwContent = false
 "BepInEx-BepInExPack" = "5.4.2100"
 
 [build]
-icon = "./428px-JiP_young.png"
+icon = "./Ji_Young_Edited.png"
 readme = "./README.md"
 outdir = "./build"
 
