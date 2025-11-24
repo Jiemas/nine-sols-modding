@@ -27,9 +27,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     private ConfigEntry<float> JiAnimatorSpeed = null!;
     private ConfigEntry<float> JiHPScale = null!;
 
-    private ColorChange colorChange = null!;
-
-    private static SpriteRenderer jiSprite = null!;
+    // private static SpriteRenderer jiSprite = null!;
     private static Material mat = null!;
     private static AssetBundle bundle = null!;
 
@@ -190,7 +188,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         string bundlePath = Path.Combine(Application.persistentDataPath, "mymodbundle");
         bundle = AssetBundle.LoadFromFile(bundlePath);
         mat = bundle.LoadAsset<Material>("RBFMat");
-        ColorChange.RecolorSprite(mat);
+        ColorChange.InitializeMat(mat);
 
         JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
         JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is double this value)");
@@ -201,7 +199,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         if (scene.name == "A10_S5_Boss_Jee")
         {
             phase2 = false;
-            jiSprite = ColorChange.getJiSprite();
+            ColorChange.getJiSprite();
             
             GetAttackGameObjects();
             AlterAttacks();
@@ -222,7 +220,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
             HandleStateChange();
-            jiSprite.material = mat;
+            ColorChange.updateJiSprite();
+
             // Logger.LogInfo(jiSprite.material);
         } 
     }
@@ -260,6 +259,7 @@ public class EnlightenedJi : BaseUnityPlugin {
                     HurtInterrupt.enabled = false;
                 }
                 phasesFromBlackHole = JiMonster.currentMonsterState == BossGeneralStates[10] ? 0 : (phasesFromBlackHole + 1);
+                // ColorChange.updateJiSprite();
             }
         }
     }
@@ -400,6 +400,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         // JiMonster.postureSystem.CurrentHealthValue = JiHPScale.Value;
         Logger.LogInfo($"Ji Phase 1 HP at {JiMonster.postureSystem.CurrentHealthValue}");
         JiMonster.monsterStat.Phase2HealthRatio = 1.65f;
+
     }
 
     private MonsterStateGroupSequence GetCurrentSequence(){
