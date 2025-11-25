@@ -16,6 +16,8 @@ namespace EnlightenedJi;
 // Might be the red laser circles
 // CircularDamage(Clone)/Animator/Effect_BEAM/P_ScretTreePowerCIRCLE/
 
+// Red stars are called Tai danger
+
 public class ColorChange {
     public static int lutSize = 16;
     public static Material material = null!;
@@ -93,10 +95,14 @@ private static (float x, float y, float z)[] stayColors = new (float x, float y,
         }
 
         var laserCircle = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/Jee_Sitck/Effect/EffectSprite");
+        var laserCircle2 = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/Attack_TeleportSword/Sprite");
         ToastManager.Toast(laserCircle);
         laserCircle.AddComponent<_2dxFX_ColorChange>();
+        laserCircle2.AddComponent<_2dxFX_ColorChange>();
         _2dxFX_ColorChange laserCircleHueValue = laserCircle.GetComponent<_2dxFX_ColorChange>();
-        laserCircleHueValue._HueShift = 130;
+        _2dxFX_ColorChange laserCircle2HueValue = laserCircle2.GetComponent<_2dxFX_ColorChange>();
+        laserCircleHueValue._HueShift = 230;
+        laserCircle2HueValue._HueShift = 230;
     }
 
     static public void InitializeMat(Material mat) {
