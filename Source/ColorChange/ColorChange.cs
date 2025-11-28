@@ -23,16 +23,10 @@ public class ColorChange {
     public static Material material = null!;
     private static int stayRange = 1;
 
-private static (float x, float y, float z)[] stayColors = new (float x, float y, float z)[]
-    {
-        // (79f, 193f, 129f), // Green Claws/Headband
-        // (186f, 240f, 227f), // Eye Blue 1
-        // (117f, 220f, 208f), // Eye Blue 2
-        // (192f, 247f, 237f), // Eye Blue 3
-    };
+private static (float x, float y, float z)[] stayColors = [];
 
-    private static ((float x, float y, float z) src, (float x, float y, float z) dst)[] colorPairs = new ((float x, float y, float z) src, (float x, float y, float z) dst)[]
-    {
+    private static ((float x, float y, float z) src, (float x, float y, float z) dst)[] colorPairs =
+    [
         ((1f, 1f, 1f), (1f, 1f, 1f)),  // Black
         ((247f, 248f, 241f), (247f, 248f, 241f)), // Fur White 
         ((186f, 240f, 227f), (186f, 240f, 227f)), // Eye Baby Blue
@@ -40,7 +34,7 @@ private static (float x, float y, float z)[] stayColors = new (float x, float y,
         ((104f, 24f, 23f), (37f, 44f, 31f)), // Cape Red -> Grey Black
         ((228f, 190f, 106f), (128f, 128f, 128f)), // Robe Yellow -> Gray
         ((212f, 203f, 167f), (201f, 207f, 203f)) // Tan Robe Highlight -> Bone White
-    };
+    ];
 
     private static Vector3[] srcColors = new Vector3[colorPairs.Length * 27];
 
@@ -50,7 +44,7 @@ private static (float x, float y, float z)[] stayColors = new (float x, float y,
 
     private static string spritePath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/";
     private static string[] jiSpritePaths = 
-    {
+    [
         // "A10S5/Room/Boss And Environment Binder/1_DropPickable 亮亮 FSM Variant/ItemProvider/DropPickable FSM Prototype/FSM Animator/VIEW/DummyJeeAnimator/View/Jee/JeeSprite",
         // "A10S5/Room/Boss And Environment Binder/1_DropPickable 亮亮 FSM Variant/ItemProvider/DropPickable FSM Prototype/FSM Animator/AfterShowView/DummyJeeAnimator/View/Jee/JeeSprite",
         "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/JeeSprite",
@@ -65,7 +59,7 @@ private static (float x, float y, float z)[] stayColors = new (float x, float y,
         "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/Cloak",
         "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/Arm",
         // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/Attack_TeleportSword/Sprite"
-    };
+    ];
     public static SpriteRenderer[] jiSprites = new SpriteRenderer[jiSpritePaths.Length];
 
     static private void initializeColors()

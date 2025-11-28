@@ -26,6 +26,17 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static ConfigEntry<float> JiAnimatorSpeed = null!;
     private static ConfigEntry<float> JiHPScale = null!;
+    private static ConfigEntry<bool> JiModifiedAttackSequences = null!;
+    private static ConfigEntry<bool> JiModifiedSpeed = null!;
+    private static ConfigEntry<bool> JiModifiedSprite = null!;
+
+    public static ConfigEntry<Vector3> blackReplace = null!;
+    public static ConfigEntry<Vector3> furReplace = null!;
+    public static ConfigEntry<Vector3> eyeReplace = null!;
+    public static ConfigEntry<Vector3> greenReplace = null!;
+    public static ConfigEntry<Vector3> capeReplace = null!;
+    public static ConfigEntry<Vector3> robeReplace = null!;
+    public static ConfigEntry<Vector3> tanReplace = null!;
 
     // private static SpriteRenderer jiSprite = null!;
     private static Material mat = null!;
@@ -63,22 +74,22 @@ public class EnlightenedJi : BaseUnityPlugin {
     private static int Hurt = 17, BigHurt = 18;
 
     // Sequence Variables
-    private static string[] SequenceStrings1 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard" };
-    private static string[] SequenceStrings2 = { "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard", 
-                                            "_QuickToBlackHole", "_Phase2_OpeningBlackHole" };
+    private static string[] SequenceStrings1 = ["", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard"];
+    private static string[] SequenceStrings2 = [ "", "_WithAltar", "_WithSmallBlackHole", "_QuickToBlizzard", 
+                                            "_QuickToBlackHole", "_Phase2_OpeningBlackHole" ];
     private static MonsterStateGroupSequence[] Sequences1 =  new MonsterStateGroupSequence[4];
     private static MonsterStateGroupSequence[] Sequences2 =  new MonsterStateGroupSequence[7];
     private static int Default = 0, WithAltar = 1, WithSmallBlackHole = 2, QuickToBlizzard = 3, 
                         QuickToBlackHole = 4, Opening = 5, Health = 6;
     
     // Group Variables
-    private static (int sequence, int index)[] ExistingGroupPairs = new (int sequence, int index)[] 
-    {
+    private static (int sequence, int index)[] ExistingGroupPairs =
+    [
         (WithSmallBlackHole, 1), (Default, 3), (QuickToBlizzard, 1), (Default, 1), (WithAltar, 1), 
         (WithAltar, 4)
-    };
-    private static (int[] attacksList, string objectName)[] customGroupPatterns = new (int[] attacksList, string objectName)[]
-    {
+    ];
+    private static (int[] attacksList, string objectName)[] customGroupPatterns =
+    [
         ([10, 11, 12, 13, 14], "SneakAttack(Attack 10/11/12/13/14)"),
         ([5, 9], "BackAttack(Attack 5/9)"),
         ([5, 9, 7], "LongerOrBlizardAttack(Attack 5/9/7)"),
@@ -89,7 +100,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         ([2, 5, 9, 11, 12, 15], "SneakAttack2(Attack2/5/9/11/12/15)"),
         ([4, 13], "HardAltarOrEasyFinisher(Attack4/13)"),
         ([4, 6, 13], "LaserAltarOrFinisher(Attack 4/6/13)")
-    };
+    ];
     private static MonsterStateGroup[] Groups = new MonsterStateGroup[ExistingGroupPairs.Length + customGroupPatterns.Length + 2];
     private static int SmallBlackHole = 0, LongerAttack = 1, Blizzard = 2,  EasyLaserAltar = 4, BigBlackHole = 6, 
         EasyOrHardFinisher = 7, SneakAttack = 8, BackAttack = 9, HardLaserAltar = 13, DoubleTrouble = 14,
@@ -122,24 +133,53 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static MonsterHurtInterrupt HurtInterrupt = null!;
 
+
+    private static Func<int, float, float> randomAdd = (probability, incr) => randomNum % probability == 0 ? incr : 0f;
+
+    private static Func<string, bool> afterFinisherCheck = lastMove => new List<string> (){"Attack13", "PostureBreak", "Attack6"}.Contains(lastMove);
+
+    private static Dictionary<string, Func<string, float>> CurrSpeedDict = null!;
+
     private static Dictionary<string, Func<string, float>> SpeedDict1 = new Dictionary<string, Func<string, float>>
     {
-        {"[1]Divination Free Zone (BossGeneralState)", (lastClipName => JiAnimatorSpeed.Value)}
-        // "[2][Short]Flying Projectiles",
-        // "[3][Finisher]BlackHoleAttack",
-        // "[4][Altar]Set Laser Altar Environment",
-        // "[5][Short]SuckSword 往內",
-        // "[6][Finisher]Teleport3Sword Smash 下砸",
-        // "[7][Finisher]SwordBlizzard",
-        // "",
-        // "[9][Short]GroundSword",
-        // "[10][Altar]SmallBlackHole",
-        // "[11][Short]ShorFlyingSword",
-        // "[12][Short]QuickHorizontalDoubleSword",
-        // "[13][Finisher]QuickTeleportSword 危戳",
-        // "[14][Altar]Laser Altar Circle",
-        // "[15][Altar]Health Altar",
-        // "[16]Divination JumpKicked"
+        {"[1]Divination Free Zone (BossGeneralState)",                  _ => randomAdd(3, 0.2f)},
+        {"[2][Short]Flying Projectiles (BossGeneralState)",             _ => randomAdd(3, 0.2f)},
+        {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
+        {"[4][Altar]Set Laser Altar Environment (BossGeneralState)",    _ => 1.55f},
+        {"[5][Short]SuckSword 往內 (BossGeneralState)",                 _ => Math.Max(randomAdd(2, 0.5f), randomAdd(3, 0.2f))},
+        {"[6][Finisher]Teleport3Sword Smash 下砸 (BossGeneralState)",   lastMove => afterFinisherCheck(lastMove) ? 0.5f : randomAdd(3, 0.2f)},
+        {"[7][Finisher]SwordBlizzard (BossGeneralState)",               _ => Math.Max(randomAdd(2, 0.5f), randomAdd(3, 0.2f))},
+        {"[9][Short]GroundSword (BossGeneralState)",                    _ => randomAdd(3, 0.2f)},
+        {"[10][Altar]SmallBlackHole (BossGeneralState)",                _ => 3f},
+        {"[11][Short]ShorFlyingSword (BossGeneralState)",               lastMove => afterFinisherCheck(lastMove) ? 2f : Math.Max(randomAdd(2, 0.5f), randomAdd(3, 0.2f))},
+        {"[12][Short]QuickHorizontalDoubleSword (BossGeneralState)",    lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(3, 0.2f)},
+        {"[13][Finisher]QuickTeleportSword 危戳 (BossGeneralState)",    lastMove => afterFinisherCheck(lastMove) ? 0.5f : randomAdd(3, 0.2f)},
+        {"[14][Altar]Laser Altar Circle (BossGeneralState)",           lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(3, 0.2f)},
+        {"[15][Altar]Health Altar (BossGeneralState)",                 _ => 1f},
+        {"[16]Divination JumpKicked",                                  _ => 3f},
+        {"PostureBreak (PostureBreakState)",                           _ => 3f},
+        {"1_Engaging (StealthEngaging)",                               _ => 3f}
+    };
+
+    private static Dictionary<string, Func<string, float>> SpeedDict2 = new Dictionary<string, Func<string, float>>
+    {
+        {"[1]Divination Free Zone (BossGeneralState)",                  _ => randomAdd(3, 0.2f)},
+        {"[2][Short]Flying Projectiles (BossGeneralState)",             lastMove => afterFinisherCheck(lastMove) ? 0.65f : randomAdd(2, 0.3f)},
+        {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
+        {"[4][Altar]Set Laser Altar Environment (BossGeneralState)",    _ => 1.65f},
+        {"[5][Short]SuckSword 往內 (BossGeneralState)",                 lastMove => afterFinisherCheck(lastMove) ? 0.65f : randomAdd(2, 0.3f)},
+        {"[6][Finisher]Teleport3Sword Smash 下砸 (BossGeneralState)",   _ => Math.Max(randomAdd(3, 0.35f), randomAdd(2, 0.3f))},
+        {"[7][Finisher]SwordBlizzard (BossGeneralState)",               _ => randomNum % 3 == 0 ? 0.7f : (randomNum % 3 == 1 ? 0.5f : 0f)},
+        {"[9][Short]GroundSword (BossGeneralState)",                    lastMove => afterFinisherCheck(lastMove) ? 0.65f : randomAdd(2, 0.3f)},
+        {"[10][Altar]SmallBlackHole (BossGeneralState)",                _ => 3f},
+        {"[11][Short]ShorFlyingSword (BossGeneralState)",               lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(2, 0.3f)},
+        {"[12][Short]QuickHorizontalDoubleSword (BossGeneralState)",    lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(2, 0.3f)},
+        {"[13][Finisher]QuickTeleportSword 危戳 (BossGeneralState)",    _ => Math.Max(randomAdd(3, 0.35f), randomAdd(2, 0.3f))},
+        {"[14][Altar]Laser Altar Circle (BossGeneralState)",           lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(2, 0.3f)},
+        {"[15][Altar]Health Altar (BossGeneralState)",                 _ => 1f},
+        {"[16]Divination JumpKicked",                                  _ => 3f},
+        {"PostureBreak (PostureBreakState)",                           _ => 3f},
+        {"1_Engaging (StealthEngaging)",                               _ => 3f}
     };
 
     private static string[] lore_quotes = [
@@ -189,10 +229,17 @@ public class EnlightenedJi : BaseUnityPlugin {
       "A GUN?! WHERE DID EIGONG GET A GUN FROM?",
       "THIS FIGHT WAS EASIER BEFORE? SURELY THAT IS JUST YOUR MEMORY FAILING YOU!",
       "ARE YOU HAVING A BAD TIME?",
-      "REMEMBER, ITS OKAY TO TAKE BREAKS!",
+      "REMEMBER, IT'S OKAY TO TAKE BREAKS!",
       "YOU MAY BE ABLE TO BEAT ME, BUT CAN YOU DO IT HITLESS?",
-      "PARRY THIS YOU FILTY CASUAL!"
+      "PARRY THIS, YOU FILTHY CASUAL!",
+      "WHY DOESN'T THAT VIRUS AIL ME LIKE ALL OTHERS? I'M BUILT DIFFERENT!"
     ];
+
+    private static Func<string, Vector3> parseVec3 =
+        s => {
+            var p = s.Split(',');
+            return new Vector3(float.Parse(p[0]), float.Parse(p[1]), float.Parse(p[2]));
+        };
 
 
     private void Awake() {
@@ -210,8 +257,42 @@ public class EnlightenedJi : BaseUnityPlugin {
         mat = bundle.LoadAsset<Material>("RBFMat");
         ColorChange.InitializeMat(mat);
 
-        JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
-        JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is double this value)");
+        // JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
+        JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is 1.65x this value)");
+        JiModifiedAttackSequences = Config.Bind("General", "JiModifiedAttackSequences", true, "Modifies Ji's attack sequences");
+        JiModifiedSpeed = Config.Bind("General", "JiModifiedSpeed", true, "Modifies Ji's move speed depending on current attack");
+        JiAnimatorSpeed = Config.Bind("General", "JiBaseSpeed", 1.2f, "The base speed at which Ji's attacks occur (Only works if JiModifiedSpeed is true)");
+        JiModifiedSprite = Config.Bind("General", "JiModifiedSprite", true, "Modifies the color of Ji's sprite");
+        blackReplace = Config.Bind("Color", "BlackReplace", "1,1,1", 
+            new ConfigDescription("Replaces black with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
+        furReplace = Config.Bind("Color", "FurReplace", "247,248,241", 
+            new ConfigDescription("Replaces fur color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
+        eyeReplace = Config.Bind("Color", "eyeReplace", "186,240,227", 
+            new ConfigDescription("Replaces the hat eye color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
+        greenReplace = Config.Bind("Color", "greenReplace", "79,193,129", 
+            new ConfigDescription("Replaces the claw and headband color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
+        robeReplace = Config.Bind("Color", "capeReplace", "37,44,31", 
+            new ConfigDescription("Replaces the cape color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
+        tanReplace = Config.Bind("Color", "tanHighlightReplace", "201,207,203", 
+            new ConfigDescription("Replaces the secondary robe color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+                new ConfigurationManagerAttributes {StrToObj = parseVec3}
+            )
+        );
 
     }
 
@@ -235,6 +316,8 @@ public class EnlightenedJi : BaseUnityPlugin {
             phase2 = false;
             ColorChange.getJiSprite();
             
+            CurrSpeedDict = SpeedDict1;
+
             GetAttackGameObjects();
             AlterAttacks();
             StartCoroutine(JiHPChange());
@@ -284,10 +367,10 @@ public class EnlightenedJi : BaseUnityPlugin {
     private void HandleStateChange() 
     {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
-        if (JiMonster.monsterCore.AnimationSpeed != animationSpeed)
-        {
-            JiMonster.monsterCore.AnimationSpeed = animationSpeed;
-        }
+        // if (JiMonster.monsterCore.AnimationSpeed != animationSpeed)
+        // {
+        //     JiMonster.monsterCore.AnimationSpeed = animationSpeed;
+        // }
         if (JiMonster is not null) 
         {
             if (temp != JiMonster.currentMonsterState.ToString())
@@ -301,23 +384,23 @@ public class EnlightenedJi : BaseUnityPlugin {
 
                 // StopAllCoroutines();
                 // StartCoroutine(AddToCompToCircularDamage());
-                
+
+
+                // // Find all active and inactive GameObjects and assets
+                // GameObject[] allGameObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+
+                // // Filter the array to find objects with the target name
+                // GameObject[] foundObjects = allGameObjects.Where(obj => obj.name == "CircularDamage(Clone)").ToArray();
+
+                // foreach (GameObject obj in foundObjects)
+                // {
+                //     obj.AddComponent<DestroyOnDisable>();
+                // }   
 
                 if (JiMonster.currentMonsterState == PhaseChangeState)
                 {
                     phase2 = true;
-
-                // Find all active and inactive GameObjects and assets
-                GameObject[] allGameObjects = Resources.FindObjectsOfTypeAll<GameObject>();
-
-                // Filter the array to find objects with the target name
-                GameObject[] foundObjects = allGameObjects.Where(obj => obj.name == "CircularDamage(Clone)").ToArray();
-
-                foreach (GameObject obj in foundObjects)
-                {
-                    obj.AddComponent<DestroyOnDisable>();
-                }
-
+                    CurrSpeedDict = SpeedDict2;
                 } else if (JiMonster.currentMonsterState == BossGeneralStates[1])
                 {
                     HurtInterrupt.enabled = true;
@@ -354,25 +437,32 @@ public class EnlightenedJi : BaseUnityPlugin {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
         if (!JiMonster) return;
 
-        JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
-
-        if (GetIndices([10, 16]).Contains(JiMonster.currentMonsterState) || // JiMonster.currentMonsterState == Engaging 
-        JiMonster.currentMonsterState == BossGeneralStates[Hurt] ||
-        JiMonster.currentMonsterState == BossGeneralStates[BigHurt] || JiMonster.currentMonsterState == JiStunState) 
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 3;
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[15]) 
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 1;
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[3]) {
-            animationSpeed = JiAnimatorSpeed.Value + 2;
-        } else if (!phase2 && JiSpeedChangePhase1()) {
-            return;
-        } else if (phase2 && JiSpeedChangePhase2()) {
-            return;
-        } else {
-            animationSpeed = JiAnimatorSpeed.Value;
+        if (CurrSpeedDict.TryGetValue(JiMonster.currentMonsterState.ToString(), out Func<string, float> incrFunc)) {
+            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + incrFunc(JiMonster.LastClipName);
         }
+        else 
+        {
+            JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
+        }
+        // JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
+
+        // if (GetIndices([10, 16]).Contains(JiMonster.currentMonsterState) || // JiMonster.currentMonsterState == Engaging 
+        // JiMonster.currentMonsterState == BossGeneralStates[Hurt] ||
+        // JiMonster.currentMonsterState == BossGeneralStates[BigHurt] || JiMonster.currentMonsterState == JiStunState) 
+        // {
+        //     animationSpeed = JiAnimatorSpeed.Value + 3;
+        // } else if (JiMonster.currentMonsterState == BossGeneralStates[15]) 
+        // {
+        //     animationSpeed = JiAnimatorSpeed.Value + 1;
+        // } else if (JiMonster.currentMonsterState == BossGeneralStates[3]) {
+        //     animationSpeed = JiAnimatorSpeed.Value + 2;
+        // } else if (!phase2 && JiSpeedChangePhase1()) {
+        //     return;
+        // } else if (phase2 && JiSpeedChangePhase2()) {
+        //     return;
+        // } else {
+        //     animationSpeed = JiAnimatorSpeed.Value;
+        // }
 
     }
 
@@ -459,7 +549,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         }
         var JiMonster = MonsterManager.Instance.ClosetMonster;
         var baseHealthRef = AccessTools.FieldRefAccess<MonsterStat, float>("BaseHealthValue");
-        if (!HPUpdated)
+        if (JiMonster.postureSystem.CurrentHealthValue != JiHPScale.Value)
         {
             baseHealthRef(JiMonster.monsterStat) = JiHPScale.Value / 1.35f;
             JiMonster.postureSystem.CurrentHealthValue = JiHPScale.Value;
@@ -641,58 +731,58 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         // Phase 1 Sequence Attack Modifications
         ModifySequence(Default, 1, [SneakAttack], 
-            new (int group, int index)[] {(SneakAttack, 2), (EasyOrHardFinisher, 4)}, 
-            new (int group, int index)[] {(BackAttack, 4), (EasyOrHardFinisher, 5)}
+            [(SneakAttack, 2), (EasyOrHardFinisher, 4)], 
+            [(BackAttack, 4), (EasyOrHardFinisher, 5)]
         );
 
         ModifySequence(WithAltar, 1, [SneakAttack],
-            new (int group, int index)[] {(SmallBlackHole, 2), (EasyLaserAltar, 3), (EasyOrHardFinisher, 4)},
-            new (int group, int index)[] {(BackAttack, 4), (EasyOrHardFinisher, 5)}
+            [(SmallBlackHole, 2), (EasyLaserAltar, 3), (EasyOrHardFinisher, 4)],
+            [(BackAttack, 4), (EasyOrHardFinisher, 5)]
         );
 
         ModifySequence(WithSmallBlackHole, 1, [SneakAttack],
-            new (int group, int index)[] {(EasyLaserAltar, 2), (Blizzard, 3), (EasyOrHardFinisher, 5)},
-            new (int group, int index)[] {(EasyOrHardFinisher, 5)}
+            [(EasyLaserAltar, 2), (Blizzard, 3), (EasyOrHardFinisher, 5)],
+            [(EasyOrHardFinisher, 5)]
         );
 
         ModifySequence(QuickToBlizzard, 1, [SneakAttack],
-            new (int group, int index)[] {(Blizzard, 3), (EasyOrHardFinisher, 4)},
-            new (int group, int index)[] {(EasyLaserAltar, 1), (EasyOrHardFinisher, 5)}
+            [(Blizzard, 3), (EasyOrHardFinisher, 4)],
+            [(EasyLaserAltar, 1), (EasyOrHardFinisher, 5)]
         );
 
-        ModifySequence(Health, 2, [SneakAttack], [], new (int group, int index)[] {(LaserAltarOrFinisher, 2), (BigBlackHole, 3)});
+        ModifySequence(Health, 2, [SneakAttack], [], [(LaserAltarOrFinisher, 2), (BigBlackHole, 3)]);
 
         // Phase 2 Sequence Attack Modifications
-        ModifySequence(Opening, 2, [SneakAttack2], [], new (int group, int index)[] {
+        ModifySequence(Opening, 2, [SneakAttack2], [], [
             (HardLaserAltar, 1), (BigBlackHole, 2), (HardLaserAltar, 3), (Blizzard, 4), (SmallBlackHole, 5), (LongerAttack, 6),
             (HardLaserAltar, 7), (DoubleTrouble, 8), (LongerAttack, 9), (HardLaserAltar, 10)
-        });
+        ]);
 
         ModifySequence(Default, 2, [SneakAttack2], 
-            new (int group, int index)[] {(EasyOrHardFinisher, 3), (EasyOrHardFinisher, 4), (EasyOrHardFinisher, 5)},
-            new (int group, int index)[] {(DoubleTrouble, 2), (DoubleTrouble, 4), (HardLaserAltar, 5)}
+            [(EasyOrHardFinisher, 3), (EasyOrHardFinisher, 4), (EasyOrHardFinisher, 5)],
+            [(DoubleTrouble, 2), (DoubleTrouble, 4), (HardLaserAltar, 5)]
         );
 
         ModifySequence(WithAltar, 2, [SneakAttack2], 
-            new (int group, int index)[] {(HardLaserAltar, 1), (DoubleTrouble, 2), (EasyOrHardFinisher, 4), 
-                (EasyOrHardFinisher, 5), (EasyOrHardFinisher, 6)},
-            new (int group, int index)[] {(Blizzard, 2), (HardLaserAltar, 5)}
+            [(HardLaserAltar, 1), (DoubleTrouble, 2), (EasyOrHardFinisher, 4), 
+                (EasyOrHardFinisher, 5), (EasyOrHardFinisher, 6)],
+            [(Blizzard, 2), (HardLaserAltar, 5)]
         );
 
         ModifySequence(WithSmallBlackHole, 2, [SneakAttack2], 
-            new (int group, int index)[] {(LongerAttack, 2), (HardLaserAltar, 3), (Blizzard, 4), (EasyOrHardFinisher, 5), 
-                (EasyOrHardFinisher, 6), (EasyOrHardFinisher, 7)}, 
-            new (int group, int index)[] {(HardLaserAltar, 5)}
+            [(LongerAttack, 2), (HardLaserAltar, 3), (Blizzard, 4), (EasyOrHardFinisher, 5), 
+                (EasyOrHardFinisher, 6), (EasyOrHardFinisher, 7)], 
+            [(HardLaserAltar, 5)]
         );
 
         ModifySequence(QuickToBlizzard, 2, [SneakAttack2], 
-            new (int group, int index)[] {(EasyOrHardFinisher, 4), (EasyOrHardFinisher, 5), (EasyOrHardFinisher, 6)},
-            new (int group, int index)[] {(Blizzard, 3), (HardLaserAltar, 5)}
+            [(EasyOrHardFinisher, 4), (EasyOrHardFinisher, 5), (EasyOrHardFinisher, 6)],
+            [(Blizzard, 3), (HardLaserAltar, 5)]
         );
 
         ModifySequence(QuickToBlackHole, 2, [SneakAttack2], 
-            new (int group, int index)[] {(EasyOrHardFinisher, 2), (EasyOrHardFinisher, 3), (EasyOrHardFinisher, 4)}, 
-            new (int group, int index)[] {(HardLaserAltar, 2), (BigBlackHole, 3), (LongerAttack, 4), (HardLaserAltar, 5)}
+            [(EasyOrHardFinisher, 2), (EasyOrHardFinisher, 3), (EasyOrHardFinisher, 4)], 
+            [(HardLaserAltar, 2), (BigBlackHole, 3), (LongerAttack, 4), (HardLaserAltar, 5)]
         );
         // Logger.LogInfo("Altered Phase 1 and 2 Attack Sequences");
     }
