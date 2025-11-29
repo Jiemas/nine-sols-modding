@@ -90,7 +90,7 @@ private static (float x, float y, float z)[] stayColors = [];
 
         var laserCircle = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/Jee_Sitck/Effect/EffectSprite");
         var laserCircle2 = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/Attack_TeleportSword/Sprite");
-        ToastManager.Toast(laserCircle);
+        // ToastManager.Toast(laserCircle);
         laserCircle.AddComponent<_2dxFX_ColorChange>();
         laserCircle2.AddComponent<_2dxFX_ColorChange>();
         _2dxFX_ColorChange laserCircleHueValue = laserCircle.GetComponent<_2dxFX_ColorChange>();
@@ -106,7 +106,6 @@ private static (float x, float y, float z)[] stayColors = [];
         mat.SetTexture("_LUT", lut);
         mat.SetFloat("_LUTSize", lutSize);
         material = mat;
-        
     }
 
     static public void updateJiSprite()

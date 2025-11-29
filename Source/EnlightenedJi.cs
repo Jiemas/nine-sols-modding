@@ -142,7 +142,7 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static Dictionary<string, Func<string, float>> SpeedDict1 = new Dictionary<string, Func<string, float>>
     {
-        {"[1]Divination Free Zone (BossGeneralState)",                  _ => randomAdd(3, 0.2f)},
+        {"[1]Divination Free Zone (BossGeneralState)",                  _ => 0},
         {"[2][Short]Flying Projectiles (BossGeneralState)",             _ => randomAdd(3, 0.2f)},
         {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
         {"[4][Altar]Set Laser Altar Environment (BossGeneralState)",    _ => 1.55f},
@@ -156,7 +156,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         {"[13][Finisher]QuickTeleportSword 危戳 (BossGeneralState)",    lastMove => afterFinisherCheck(lastMove) ? 0.5f : randomAdd(3, 0.2f)},
         {"[14][Altar]Laser Altar Circle (BossGeneralState)",           lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(3, 0.2f)},
         {"[15][Altar]Health Altar (BossGeneralState)",                 _ => 1f},
-        {"[16]Divination JumpKicked",                                  _ => 3f},
+        {"[16]Divination JumpKicked (BossGeneralState)",                                  _ => 3f},
         {"PostureBreak (PostureBreakState)",                           _ => 3f},
         {"1_Engaging (StealthEngaging)",                               _ => 3f}
     };
@@ -177,7 +177,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         {"[13][Finisher]QuickTeleportSword 危戳 (BossGeneralState)",    _ => Math.Max(randomAdd(3, 0.35f), randomAdd(2, 0.3f))},
         {"[14][Altar]Laser Altar Circle (BossGeneralState)",           lastMove => afterFinisherCheck(lastMove) ? 2f : randomAdd(2, 0.3f)},
         {"[15][Altar]Health Altar (BossGeneralState)",                 _ => 1f},
-        {"[16]Divination JumpKicked",                                  _ => 3f},
+        {"[16]Divination JumpKicked (BossGeneralState)",                                  _ => 3f},
         {"PostureBreak (PostureBreakState)",                           _ => 3f},
         {"1_Engaging (StealthEngaging)",                               _ => 3f}
     };
@@ -253,46 +253,46 @@ public class EnlightenedJi : BaseUnityPlugin {
         SceneManager.sceneLoaded += OnSceneLoaded;
 
         string bundlePath = Path.Combine(Application.persistentDataPath, "mymodbundle");
+        
         bundle = AssetBundle.LoadFromFile(bundlePath);
         mat = bundle.LoadAsset<Material>("RBFMat");
         ColorChange.InitializeMat(mat);
 
-        // JiAnimatorSpeed = Config.Bind("General", "JiSpeed", 1.2f, "The speed at which Ji's attacks occur");
         JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is 1.65x this value)");
         JiModifiedAttackSequences = Config.Bind("General", "JiModifiedAttackSequences", true, "Modifies Ji's attack sequences");
         JiModifiedSpeed = Config.Bind("General", "JiModifiedSpeed", true, "Modifies Ji's move speed depending on current attack");
         JiAnimatorSpeed = Config.Bind("General", "JiBaseSpeed", 1.2f, "The base speed at which Ji's attacks occur (Only works if JiModifiedSpeed is true)");
         JiModifiedSprite = Config.Bind("General", "JiModifiedSprite", true, "Modifies the color of Ji's sprite");
-        blackReplace = Config.Bind("Color", "BlackReplace", "1,1,1", 
-            new ConfigDescription("Replaces black with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
-        furReplace = Config.Bind("Color", "FurReplace", "247,248,241", 
-            new ConfigDescription("Replaces fur color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
-        eyeReplace = Config.Bind("Color", "eyeReplace", "186,240,227", 
-            new ConfigDescription("Replaces the hat eye color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
-        greenReplace = Config.Bind("Color", "greenReplace", "79,193,129", 
-            new ConfigDescription("Replaces the claw and headband color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
-        robeReplace = Config.Bind("Color", "capeReplace", "37,44,31", 
-            new ConfigDescription("Replaces the cape color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
-        tanReplace = Config.Bind("Color", "tanHighlightReplace", "201,207,203", 
-            new ConfigDescription("Replaces the secondary robe color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
-                new ConfigurationManagerAttributes {StrToObj = parseVec3}
-            )
-        );
+        // blackReplace = Config.Bind("Color", "BlackReplace", "1,1,1", 
+        //     new ConfigDescription("Replaces black with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
+        // furReplace = Config.Bind("Color", "FurReplace", "247,248,241", 
+        //     new ConfigDescription("Replaces fur color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
+        // eyeReplace = Config.Bind("Color", "eyeReplace", "186,240,227", 
+        //     new ConfigDescription("Replaces the hat eye color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
+        // greenReplace = Config.Bind("Color", "greenReplace", "79,193,129", 
+        //     new ConfigDescription("Replaces the claw and headband color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
+        // robeReplace = Config.Bind("Color", "capeReplace", "37,44,31", 
+        //     new ConfigDescription("Replaces the cape color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
+        // tanReplace = Config.Bind("Color", "tanHighlightReplace", "201,207,203", 
+        //     new ConfigDescription("Replaces the secondary robe color with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
+        //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
+        //     )
+        // );
 
     }
 
@@ -314,10 +314,9 @@ public class EnlightenedJi : BaseUnityPlugin {
         if (scene.name == "A10_S5_Boss_Jee")
         {
             phase2 = false;
-            ColorChange.getJiSprite();
-            
-            CurrSpeedDict = SpeedDict1;
 
+            ColorChange.getJiSprite();
+            CurrSpeedDict = SpeedDict1;
             GetAttackGameObjects();
             AlterAttacks();
             StartCoroutine(JiHPChange());
@@ -342,6 +341,7 @@ public class EnlightenedJi : BaseUnityPlugin {
             HandleStateChange();
             ColorChange.updateJiSprite();
             
+            // This is very performance heavy, need to find a better alternative
             var greenEffect = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/MultiSpriteEffect_Prefab 識破提示Variant(Clone)");
             if (greenEffect is not null)
             {
@@ -367,10 +367,6 @@ public class EnlightenedJi : BaseUnityPlugin {
     private void HandleStateChange() 
     {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
-        // if (JiMonster.monsterCore.AnimationSpeed != animationSpeed)
-        // {
-        //     JiMonster.monsterCore.AnimationSpeed = animationSpeed;
-        // }
         if (JiMonster is not null) 
         {
             if (temp != JiMonster.currentMonsterState.ToString())
@@ -401,6 +397,7 @@ public class EnlightenedJi : BaseUnityPlugin {
                 {
                     phase2 = true;
                     CurrSpeedDict = SpeedDict2;
+                    HandlePhaseTransitionText();
                 } else if (JiMonster.currentMonsterState == BossGeneralStates[1])
                 {
                     HurtInterrupt.enabled = true;
@@ -444,7 +441,7 @@ public class EnlightenedJi : BaseUnityPlugin {
         {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
         }
-        // JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
+        JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
 
         // if (GetIndices([10, 16]).Contains(JiMonster.currentMonsterState) || // JiMonster.currentMonsterState == Engaging 
         // JiMonster.currentMonsterState == BossGeneralStates[Hurt] ||
