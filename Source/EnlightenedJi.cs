@@ -29,6 +29,8 @@ public class EnlightenedJi : BaseUnityPlugin {
     private static ConfigEntry<bool> JiModifiedAttackSequences = null!;
     private static ConfigEntry<bool> JiModifiedSpeed = null!;
     private static ConfigEntry<bool> JiModifiedSprite = null!;
+    private static ConfigEntry<bool> JiModifiedHP = null!;
+    private static ConfigEntry<float> JiPhase2HPRatio = null!;
 
     public static ConfigEntry<Vector3> blackReplace = null!;
     public static ConfigEntry<Vector3> furReplace = null!;
@@ -163,7 +165,7 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static Dictionary<string, Func<string, float>> SpeedDict2 = new Dictionary<string, Func<string, float>>
     {
-        {"[1]Divination Free Zone (BossGeneralState)",                  _ => randomAdd(3, 0.2f)},
+        {"[1]Divination Free Zone (BossGeneralState)",                  _ => 0f},
         {"[2][Short]Flying Projectiles (BossGeneralState)",             lastMove => afterFinisherCheck(lastMove) ? 0.65f : randomAdd(2, 0.3f)},
         {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
         {"[4][Altar]Set Laser Altar Environment (BossGeneralState)",    _ => 1.65f},
@@ -258,11 +260,17 @@ public class EnlightenedJi : BaseUnityPlugin {
         mat = bundle.LoadAsset<Material>("RBFMat");
         ColorChange.InitializeMat(mat);
 
-        JiHPScale = Config.Bind("General", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1 (Phase 2 HP is 1.65x this value)");
-        JiModifiedAttackSequences = Config.Bind("General", "JiModifiedAttackSequences", true, "Modifies Ji's attack sequences");
-        JiModifiedSpeed = Config.Bind("General", "JiModifiedSpeed", true, "Modifies Ji's move speed depending on current attack");
-        JiAnimatorSpeed = Config.Bind("General", "JiBaseSpeed", 1.2f, "The base speed at which Ji's attacks occur (Only works if JiModifiedSpeed is true)");
-        JiModifiedSprite = Config.Bind("General", "JiModifiedSprite", true, "Modifies the color of Ji's sprite");
+        JiModifiedHP = Config.Bind("General (Retry boss to make any change have effect)", "JiModifiedHP", true, "Modifies Ji's HP");
+        JiModifiedAttackSequences = Config.Bind("General (Retry boss to make any change have effect)", "JiModifiedAttackSequences", true, "Modifies Ji's attack sequences");
+        JiModifiedSpeed = Config.Bind("General (Retry boss to make any change have effect)", "JiModifiedSpeed", true, "Modifies Ji's move speed depending on current attack");
+        JiModifiedSprite = Config.Bind("General (Retry boss to make any change have effect)", "JiModifiedSprite", true, "Modifies the color of Ji's sprite");
+        
+        JiAnimatorSpeed = Config.Bind("Speed (Must set JiModifiedSpeed to true to take effect)", "JiBaseSpeed", 1.2f, "The base speed at which Ji's attacks occur");
+
+        JiHPScale = Config.Bind("HP (Must set JiModifiedHP to true to take effect)", "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1");
+        JiPhase2HPRatio = Config.Bind("HP (Must set JiModifiedHP to true to take effect)", "JiPhase2HPRatio", 1.65f, "The ratio used to determine phase 2 health (Phase 1 health * ratio)");
+        
+
         // blackReplace = Config.Bind("Color", "BlackReplace", "1,1,1", 
         //     new ConfigDescription("Replaces black with specified RGB value on Ji's sprite (Only works if JiModifiedSprite is true)", null, 
         //         new ConfigurationManagerAttributes {StrToObj = parseVec3}
@@ -318,7 +326,10 @@ public class EnlightenedJi : BaseUnityPlugin {
             ColorChange.getJiSprite();
             CurrSpeedDict = SpeedDict1;
             GetAttackGameObjects();
-            AlterAttacks();
+            if (JiModifiedAttackSequences.Value) {
+                AlterAttacks();
+
+            }
             StartCoroutine(JiHPChange());
         }
     }
@@ -337,9 +348,14 @@ public class EnlightenedJi : BaseUnityPlugin {
     public void Update() {
         
         if (SceneManager.GetActiveScene().name == "A10_S5_Boss_Jee") {
-            JiSpeedChange();
+            if (JiModifiedSpeed.Value) {
+                JiSpeedChange();
+            }
+            // JiSpeedChange();
             HandleStateChange();
-            ColorChange.updateJiSprite();
+            if (JiModifiedSprite.Value) {
+                ColorChange.updateJiSprite();
+            }
             
             // This is very performance heavy, need to find a better alternative
             var greenEffect = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/MultiSpriteEffect_Prefab 識破提示Variant(Clone)");
@@ -372,7 +388,10 @@ public class EnlightenedJi : BaseUnityPlugin {
             if (temp != JiMonster.currentMonsterState.ToString())
             {
                 temp = JiMonster.currentMonsterState.ToString();
-                randomNum = random.Next();
+
+                if (temp != "1_Engaging (StealthEngaging)") {
+                    randomNum = random.Next();
+                }
 
                 Logger.LogInfo($"'{temp}'");
                 Logger.LogInfo(GetCurrentSequence());
@@ -442,101 +461,6 @@ public class EnlightenedJi : BaseUnityPlugin {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value;
         }
         JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
-
-        // if (GetIndices([10, 16]).Contains(JiMonster.currentMonsterState) || // JiMonster.currentMonsterState == Engaging 
-        // JiMonster.currentMonsterState == BossGeneralStates[Hurt] ||
-        // JiMonster.currentMonsterState == BossGeneralStates[BigHurt] || JiMonster.currentMonsterState == JiStunState) 
-        // {
-        //     animationSpeed = JiAnimatorSpeed.Value + 3;
-        // } else if (JiMonster.currentMonsterState == BossGeneralStates[15]) 
-        // {
-        //     animationSpeed = JiAnimatorSpeed.Value + 1;
-        // } else if (JiMonster.currentMonsterState == BossGeneralStates[3]) {
-        //     animationSpeed = JiAnimatorSpeed.Value + 2;
-        // } else if (!phase2 && JiSpeedChangePhase1()) {
-        //     return;
-        // } else if (phase2 && JiSpeedChangePhase2()) {
-        //     return;
-        // } else {
-        //     animationSpeed = JiAnimatorSpeed.Value;
-        // }
-
-    }
-
-    private bool JiSpeedChangePhase1() {
-        var JiMonster = MonsterManager.Instance.ClosetMonster;
-
-        // Sneak Attack Speed Up
-        if ((JiMonster.LastClipName == "Attack13" || JiMonster.LastClipName == "PostureBreak") && 
-            GetIndices([11, 12, 14]).Contains(JiMonster.currentMonsterState))
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 2;
-        
-        // 2nd Finisher & Long Attack Speed Up
-        } else if ((JiMonster.currentMonsterState == BossGeneralStates[13] && 
-            (JiMonster.LastClipName == "Attack13" || JiMonster.LastClipName == "PostureBreak")) || 
-            (randomNum % 2 == 0 && GetIndices([11, 5]).Contains(JiMonster.currentMonsterState)))
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 0.5f;
-        
-        // Blizzard Random Speed Up
-        } else if (randomNum % 2 == 0 && JiMonster.currentMonsterState == BossGeneralStates[7])
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 0.5f;
-        
-        // Hard Laser Altar Speed Up
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[4])
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 1.55f;
-
-        // Random Attack Speed Up
-        } else if (randomNum % 3 == 0) {
-            animationSpeed = JiAnimatorSpeed.Value + 0.2f;
-        } else {
-            return false;
-        }
-        return true;
-    }
-
-    private bool JiSpeedChangePhase2() {
-        var JiMonster = MonsterManager.Instance.ClosetMonster;
-
-        // Sneak Attack Speed Up
-        if ((JiMonster.LastClipName == "Attack13" || JiMonster.LastClipName == "PostureBreak" || 
-            JiMonster.LastClipName == "Attack6") && !(GetIndices([6, 13]).Contains(JiMonster.currentMonsterState)))
-        {
-            if (JiMonster.currentMonsterState == BossGeneralStates[14]) {
-                animationSpeed = JiAnimatorSpeed.Value + 2f;
-            } else {
-               animationSpeed = JiAnimatorSpeed.Value + 0.65f;
-            }
-
-        // Hard Altar Attack Speed Up
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[4])
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 1.65f;
-
-        // Blizzard Attack Speed up
-        } else if (JiMonster.currentMonsterState == BossGeneralStates[7]) 
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 0.7f;
-
-        // Opening Sequence Sword Attack Speed Up
-        } else if (GetCurrentSequence() == Sequences2[Opening] &&
-            GetIndices([11, 12, 2, 9]).Contains(JiMonster.currentMonsterState))
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 0.25f;
-        
-        // Red/Green Attack Speed Up
-        } else if (randomNum % 3 == 0 && GetIndices([6, 13]).Contains(JiMonster.currentMonsterState))
-        {
-            animationSpeed = JiAnimatorSpeed.Value + 0.35f;
-        } else if (randomNum % 2 == 0) {
-            animationSpeed = JiAnimatorSpeed.Value + 0.3f;
-        } else {
-            return false;
-        }
-        return true;
     }
 
     private IEnumerator JiHPChange() {
