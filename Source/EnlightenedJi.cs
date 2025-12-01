@@ -17,21 +17,6 @@ using System.Reflection;
 
 namespace EnlightenedJi;
 
-// public class SimpleCoroutine : BaseUnityPlugin {
-//     public void Start() {
-//         StartCoroutine(delayTitleChange());
-//     }
-
-//     private IEnumerator delayTitleChange()
-//     {
-//         yield return new WaitForSeconds(1f);
-//         RubyTextMeshProUGUI BossName = GameObject.Find(
-//             "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
-//             .GetComponent<RubyTextMeshProUGUI>();
-//         BossName.text = "The Kunlun Immortal";
-//     }
-// }
-
 // [BepInDependency(NineSolsAPICore.PluginGUID)]
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class EnlightenedJi : BaseUnityPlugin {
@@ -129,7 +114,6 @@ public class EnlightenedJi : BaseUnityPlugin {
     private static string temp = "";
 
     private static int randomNum = 0;
-    private static float animationSpeed = 1;
     private static bool firstMessage = true;
 
     private static System.Random random = new System.Random();
@@ -254,10 +238,10 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private void InitConfig() 
     {
-        string general = "General (Retry boss to make any change have effect)";
-        string speed = "Speed (Must set JiModifiedSpeed to true to take effect)";
-        string hp = "HP (Must set JiModifiedHP to true to take effect)";
-        string color = "Color (Must set JiModifiedSprite to true to take effect)";
+        string general = "1. General (Retry boss to make any change have effect)";
+        string speed = "2. Speed (Must set JiModifiedSpeed to true to take effect)";
+        string hp = "3. HP (Must set JiModifiedHP to true to take effect)";
+        string color = "4. Color (Must set JiModifiedSprite to true to take effect)";
 
         JiModifiedHP = Config.Bind(general, "JiModifiedHP", true, "Modifies Ji's HP");
         JiModifiedAttackSequences = Config.Bind(general, "JiModifiedAttackSequences", true, "Modifies Ji's attack sequences");
@@ -269,15 +253,15 @@ public class EnlightenedJi : BaseUnityPlugin {
         JiHPScale = Config.Bind(hp, "JiHPScale", 6500f, "The amount of Ji's HP in Phase 1");
         JiPhase2HPRatio = Config.Bind(hp, "JiPhase2HPRatio", 1.65f, "The ratio used to determine phase 2 health (Phase 1 health * ratio)");
 
-        blackReplace = Config.Bind(color, "BlackReplace", "1,1,1", "Replaces black with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
-        furReplace = Config.Bind(color, "FurReplace", "247,248,241", "Replaces fur color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
+        blackReplace = Config.Bind(color, "blackReplace", "1,1,1", "Replaces black with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
+        furReplace = Config.Bind(color, "furReplace", "247,248,241", "Replaces fur color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         eyeReplace = Config.Bind(color, "eyeReplace", "186,240,227", "Replaces the hat eye color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         greenReplace = Config.Bind(color, "greenReplace", "79,193,129", "Replaces the claw and headband color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         capeReplace = Config.Bind(color, "capeReplace", "37,44,31", "Replaces the cape color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         robeReplace = Config.Bind(color, "robeReplace", "128,128,128", "Replaces the robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");        
         tanReplace = Config.Bind(color, "tanHighlightReplace", "201,207,203", "Replaces the secondary robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         reloadMaterialKeyboardShortcut = Config.Bind(color,
-            "materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
+            "*materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
             "Press after modifying color replacements to reload material and shaders with new colors");
         KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
     }
@@ -329,7 +313,20 @@ public class EnlightenedJi : BaseUnityPlugin {
             greenReplace.Value, capeReplace.Value, robeReplace.Value, tanReplace.Value]);
         ColorChange.InitializeMat(mat);
         Logger.LogInfo("Reloaded material!");
-    }
+
+        // "MultiSpriteEffect_Prefab 識破提示Variant"
+
+        var all = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var go in all) {
+            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)" || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") {
+                Logger.LogInfo("Found: " + go.name);
+                Transform sprite = go.transform.Find("View/Sprite");
+                Logger.LogInfo("Got: " + sprite);
+                var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
+                spriteRenderer.material = ColorChange.material;
+            }
+        }
+}
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -359,6 +356,8 @@ public class EnlightenedJi : BaseUnityPlugin {
                 StartCoroutine(JiHPChange(5049f, 2f)); // TODO VERIFY REAL VALUE
             }
 
+
+
         }
     }
 
@@ -382,21 +381,8 @@ public class EnlightenedJi : BaseUnityPlugin {
     private void ActionUpdate ()
     {
         JiSpeedChange();
-        // if (JiModifiedSpeed.Value) {
-        //     JiSpeedChange();
-        // }
         HandleStateChange();
         JiSpriteUpdate();
-        // if (JiModifiedSprite.Value) {
-        //     ColorChange.updateJiSprite();
-        // }
-        
-        // This is very performance heavy, need to find a better alternative
-        var greenEffect = GameObject.Find("A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/MultiSpriteEffect_Prefab 識破提示Variant(Clone)");
-        if (greenEffect is not null)
-        {
-            greenEffect.SetActive(false);
-        }
 
         // var laserCircle = GameObject.Find("CircularDamage(Clone)/Animator/Effect_BEAM/P_ScretTreePowerCIRCLE");
         // ToastManager.Toast(laserCircle);
