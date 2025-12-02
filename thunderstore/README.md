@@ -2,7 +2,7 @@
 
 >**"Ji decided to read the hexagrams one last time and learned he did not need to hold back."**
 
-A mod that makes Ji harder by increasing health, attack sequence length, and move variety. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
+A mod that makes Ji harder by increasing health, attack sequence length, move variety, and speed. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
 
 # Installation
 Can use a mod manager of your choice or manual installation.
@@ -77,8 +77,9 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - None of the messages are canon, just something I can imagine Ji saying
 - Small chance for nonsensical messages
 
-## Known Issues
+## Known Bugs/Issues
 - A flying sword can rarely move harmlessly through Yi, not causing damage or giving Yi a Qi charge
+- Black holes (Small and big) can lower into the ground
 - Yi can rarely take damage from seemingly nowhere
    - I suspect this is either due to the increased animation speed causing hitbox issues or my custom attack groups somehow causing Ji to launch 2 attacks simultaneously, one visible and one invisible
    - This issue most commonly occurs while near an altar (Laser or Black Hole) and Ji launches an attack
@@ -98,8 +99,10 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 
 ## Showcase
 - Youtube Video: [Nine Sols Enlightened Ji Mod, V1.0.2](https://youtu.be/lR0jhQSGYj0)
+- Github Repository: [NineSolsEnlightenedJi] (https://github.com/Jiemas/NineSolsEnlightenedJi)
 
 ## Acknowledgements
 - Code was written through heavy reference of MicheliniDev's Eigong Prime Mod, KaitoMajima's Promised Eigong Mod, and Jakob Hellermann's Example Mod.
 - The Unity Explorer Mod was essential to figuring out object paths and attack logic
+- ChatGPT was used, especially for the shader and material code (that stuff is black magic), so thanks to all the Unity discussions online that OpenAI stole
 - Thanks to everyone in the modding discord for their comments and suggestions!

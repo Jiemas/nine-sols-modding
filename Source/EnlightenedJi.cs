@@ -19,7 +19,8 @@ namespace EnlightenedJi;
 
 // [BepInDependency(NineSolsAPICore.PluginGUID)]
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-public class EnlightenedJi : BaseUnityPlugin {
+public class EnlightenedJi : BaseUnityPlugin
+{
     // https://docs.bepinex.dev/articles/dev_guide/plugin_tutorial/4_configuration.html
 
     private Harmony harmony = null!;
@@ -42,7 +43,7 @@ public class EnlightenedJi : BaseUnityPlugin {
     public static ConfigEntry<string> crimsonReplace = null!;
 
     private ConfigEntry<KeyboardShortcut> reloadMaterialKeyboardShortcut = null!;
-    // private static SpriteRenderer jiSprite = null!;
+
     private static Material mat = null!;
     private static Material crimsonMat = null!;
     private static AssetBundle bundle = null!;
@@ -114,6 +115,8 @@ public class EnlightenedJi : BaseUnityPlugin {
     // private static int QuickAttack = 3, EasyFinisher = 5, LongerOrBlizzard = 10, SwordOrLaser = 11, SwordOrAltar = 12, HardAltarOrEasyFinisher = 16,
 
     // Miscellaneous Variables
+    private static Color crimsonColor;
+
     private static string temp = "";
 
     private static int randomNum = 0;
@@ -135,12 +138,14 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     private static Action JiUpdate = null!;
     private static Action JiSpeedChange = null!;
+    private static Action JiStateChange = null!;
     private static Action JiSpriteUpdate = null!;
     private static Action Pass = () => {};
 
     private static Func<int, float, float> randomAdd = (probability, incr) => randomNum % probability == 0 ? incr : 0f;
 
-    private static Func<string, bool> afterFinisherCheck = lastMove => new List<string> (){"Attack13", "PostureBreak", "Attack6"}.Contains(lastMove);
+    private static Func<string, bool> afterFinisherCheck = lastMove => 
+        new List<string>() {"Attack13", "PostureBreak", "Attack6"}.Contains(lastMove);
 
     private static Dictionary<string, Func<string, float>> CurrSpeedDict = null!;
 
@@ -186,7 +191,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         {"1_Engaging (StealthEngaging)",                               _ => 3f}
     };
 
-    private static string[] lore_quotes = [
+    private static string[] lore_quotes = 
+    [
       "IT'S TIME TO END THIS!",
       "HEROES ARE FORGED IN AGONY, YI!",
       "DO YOU KNOW WHAT IT IS LIKE TO LEAVE YOUR LOVED ONES SO FAR BEHIND? I SUPPOSE YOU DO...",
@@ -215,7 +221,8 @@ public class EnlightenedJi : BaseUnityPlugin {
       "YOU MUST BE AWARE, THIS FIGHT? A SIMPLE PASTTIME FOR BEINGS FAR GREATER THAN WE COULD IMAGINE."
     ];
     
-    private static string[] meme_quotes = [
+    private static string[] meme_quotes = 
+    [
       "TIS BUT A SCRATCH!",
       "NAH, I'D WIN.",
       "WHAT'S WRONG YI, NO MAIDENS?",
@@ -271,11 +278,11 @@ public class EnlightenedJi : BaseUnityPlugin {
     }
 
 
-    private void Awake() {
+    private void Awake() 
+    {
         Log.Init(Logger);
         RCGLifeCycle.DontDestroyForever(gameObject);
 
-        // Load patches from any class annotated with @HarmonyPatch
         harmony = Harmony.CreateAndPatchAll(typeof(EnlightenedJi).Assembly);
 
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
@@ -285,11 +292,13 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         JiUpdate = Pass;
         JiSpeedChange = Pass;
+        JiStateChange = Pass;
         JiSpriteUpdate = Pass;
 
         string bundlePath = Path.Combine(Application.persistentDataPath, "mymodbundle");
         bundle = AssetBundle.LoadFromFile(bundlePath);
-        if (bundle is not null) {
+        if (bundle is not null) 
+        {
             mat = bundle.LoadAsset<Material>("RBFMat");
             if (mat is not null) 
             {
@@ -297,55 +306,52 @@ public class EnlightenedJi : BaseUnityPlugin {
                 ReloadMaterial();
             }
         }
+
+        var crimsonTuple = ColorChange.parseTuple(crimsonReplace.Value);
+        crimsonColor = new Color(crimsonTuple.x, crimsonTuple.y, crimsonTuple.z);
+
     }
 
-    // private IEnumerator AddToCompToCircularDamage(circleObj)
-    // {
-    //     GameObject CircularDamage = null!;
-    //     while (CircularDamage is null)
-    //     {
-    //         Logger.LogInfo("Looking for circular!");
-    //         CircularDamage = GameObject.Find("CircularDamage(Clone)");
-    //         yield return new WaitForSeconds(1.0f);
-    //     }
-    //     Logger.LogInfo("Added component!");
-    //     CircularDamage.AddComponent<DestroyOnDisable>();
-    // }
-
-    private IEnumerator ModifyMultiSprite() 
+    private IEnumerator ModifyHiddenObjects() 
     {
-        while (SceneManager.GetActiveScene().name != "A10_S5_Boss_Jee") {
+        while (SceneManager.GetActiveScene().name != "A10_S5_Boss_Jee") 
+        {
             yield return new WaitForSeconds(0.25f);
         }
         var all = Resources.FindObjectsOfTypeAll<GameObject>();
-        foreach (var go in all) {
-            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)" || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") {
+        foreach (var go in all) 
+        {
+            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)" || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") 
+            {
                 // Logger.LogInfo("Found: " + go.name);
                 Transform sprite = go.transform.Find("View/Sprite");
                 // Logger.LogInfo("Got: " + sprite);
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
                 spriteRenderer.material = mat;
-            } else if (go.name == "Effect_TaiDanger(Clone)" || go.name == "Effect_TaiDanger") {
+            } 
+            else if (go.name == "Effect_TaiDanger(Clone)" || go.name == "Effect_TaiDanger") 
+            {
                 // Logger.LogInfo("Found: " + go.name);
                 Transform sprite = go.transform.Find("Sprite");
                 // Logger.LogInfo("Got: " + sprite);
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
                 // Logger.LogInfo("Got: " + spriteRenderer);
                 spriteRenderer.material = crimsonMat;
+            } 
+            else if (go.name == "CircularDamage(Clone)" || go.name == "CircularDamage") 
+            {
+                go.AddComponent<DestroyOnDisable>();
             }
         }
     }
 
     private void ReloadMaterial()
     {
-        // ColorChange.InitializePairs(ColorChange.colorPairs, ColorChange.originalColors, [blackReplace.Value, furReplace.Value, eyeReplace.Value, 
-        //     greenReplace.Value, capeReplace.Value, robeReplace.Value, tanReplace.Value]);
         ColorChange.InitializeJiMat(mat, [blackReplace.Value, furReplace.Value, eyeReplace.Value, 
             greenReplace.Value, capeReplace.Value, robeReplace.Value, tanReplace.Value]);
         ColorChange.InitializeCrimsonMat(crimsonMat, [blackReplace.Value, crimsonReplace.Value]);
         Logger.LogInfo("Reloaded material!");
-        StartCoroutine(ModifyMultiSprite());
-
+        StartCoroutine(ModifyHiddenObjects());
 }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -353,34 +359,44 @@ public class EnlightenedJi : BaseUnityPlugin {
         if (scene.name == "A10_S5_Boss_Jee")
         {
 
-            if (JiModifiedSprite.Value) {
+            if (JiModifiedSprite.Value) 
+            {
                 ColorChange.getSprites();
                 JiSpriteUpdate = ActionSpriteUpdate;
-            } else {
+            } 
+            else 
+            {
                 JiSpriteUpdate = Pass;
             }
 
-            if (JiModifiedSpeed.Value) {
+            if (JiModifiedSpeed.Value) 
+            {
                 CurrSpeedDict = SpeedDict1;
                 JiSpeedChange = ActionSpeedChange;
-            } else {
+            } 
+            else 
+            {
                 JiSpeedChange = Pass;
             }
 
             GetAttackGameObjects();
-            if (JiModifiedAttackSequences.Value) {
+            if (JiModifiedAttackSequences.Value) 
+            {
                 AlterAttacks();
             }
 
             JiUpdate = ActionUpdate;
 
-            if (JiModifiedHP.Value) {
+            if (JiModifiedHP.Value) 
+            {
                 StartCoroutine(JiHPChange(JiHPScale.Value, JiPhase2HPRatio.Value));
-            } else {
+            }
+            else 
+            {
                 StartCoroutine(JiHPChange(5049f, 2f)); // TODO VERIFY REAL VALUE
             }
 
-
+            StartCoroutine(InitJiStateChange());
 
         }
     }
@@ -398,83 +414,63 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     }
 
-    private static bool foo = true;
+    private IEnumerator InitJiStateChange() 
+    {
+        while (MonsterManager.Instance.ClosetMonster is null) 
+        {
+            yield return null;
+        }
+        JiStateChange = HandleStateChange;
+    }
 
     private static Action ActionSpriteUpdate = () => 
     {
         ColorChange.updateJiSprite(mat);
         ColorChange.updateCrimsonSprites(crimsonMat);
+        ColorChange.updateCrimsonParticles(crimsonColor);
     };
 
     private void ActionUpdate ()
     {
         JiSpeedChange();
-        HandleStateChange();
+        JiStateChange();
         JiSpriteUpdate();
-
-        // var laserCircle = GameObject.Find("CircularDamage(Clone)/Animator/Effect_BEAM/P_ScretTreePowerCIRCLE");
-        // ToastManager.Toast(laserCircle);
-        // if (laserCircle is not null && foo is true)
-        // {
-        //     laserCircle.AddComponent<_2dxFX_ColorChange>();
-        //     _2dxFX_ColorChange laserCircleHueValue = laserCircle.GetComponent<_2dxFX_ColorChange>();
-        //     laserCircleHueValue._HueShift = 130;
-        //     foo = false;
-        // }
-        // laserCircle.AddComponent<_2dxFX_ColorChange>();
-        // _2dxFX_ColorChange laserCircleHueValue = laserCircle.GetComponent<_2dxFX_ColorChange>();
-        // laserCircleHueValue._HueShift = 130;
-            // Logger.LogInfo(jiSprite.material);
     }
 
-
-    public void Update() {
+    public void Update() 
+    {
         JiUpdate();
     }
 
     private void HandleStateChange() 
     {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
-        if (JiMonster is not null) 
+        if (temp != JiMonster.currentMonsterState.ToString())
         {
-            if (temp != JiMonster.currentMonsterState.ToString())
+            if (JiMonster.currentMonsterState.ToString() != "1_Engaging (StealthEngaging)") 
             {
-                if (JiMonster.currentMonsterState.ToString() != "1_Engaging (StealthEngaging)") {
-                    temp = JiMonster.currentMonsterState.ToString();
-                    randomNum = random.Next();
-                }
+                temp = JiMonster.currentMonsterState.ToString();
+                randomNum = random.Next();
+            }
 
-                // Logger.LogInfo($"'{temp}'");
-                Logger.LogInfo(JiMonster.currentMonsterState.ToString());
-                Logger.LogInfo(GetCurrentSequence());
-                Logger.LogInfo("");
+            // Logger.LogInfo($"'{temp}'");
+            Logger.LogInfo(JiMonster.currentMonsterState.ToString());
+            Logger.LogInfo(GetCurrentSequence());
+            Logger.LogInfo("");
 
-                // StopAllCoroutines();
-                // StartCoroutine(AddToCompToCircularDamage());
-
-
-                // // Find all active and inactive GameObjects and assets
-                // GameObject[] allGameObjects = Resources.FindObjectsOfTypeAll<GameObject>();
-
-                // // Filter the array to find objects with the target name
-                // GameObject[] foundObjects = allGameObjects.Where(obj => obj.name == "CircularDamage(Clone)").ToArray();
-
-                // foreach (GameObject obj in foundObjects)
-                // {
-                //     obj.AddComponent<DestroyOnDisable>();
-                // }   
-
-                if (JiMonster.currentMonsterState == PhaseChangeState)
-                {
-                    CurrSpeedDict = SpeedDict2;
-                    HandlePhaseTransitionText();
-                    StartCoroutine(delayTitleChange());
-                } else if (JiMonster.currentMonsterState == BossGeneralStates[1])
-                {
-                    HurtInterrupt.enabled = true;
-                } else {
-                    HurtInterrupt.enabled = false;
-                }
+            if (JiMonster.currentMonsterState == PhaseChangeState)
+            {
+                CurrSpeedDict = SpeedDict2;
+                HandlePhaseTransitionText();
+                StartCoroutine(delayTitleChange());
+            } 
+            else if (JiMonster.currentMonsterState == BossGeneralStates[1])
+            {
+                HurtInterrupt.enabled = true;
+            } 
+            else 
+            {
+                HurtInterrupt.enabled = false;
             }
         }
     }
@@ -489,11 +485,13 @@ public class EnlightenedJi : BaseUnityPlugin {
         PhaseTransitionText.text = randomNum % 4 == 0 ? meme_quotes[random.Next() % meme_quotes.Length] : lore_quotes[random.Next() % lore_quotes.Length];
     }
 
-    private static Action ActionSpeedChange = () => {
+    private static Action ActionSpeedChange = () => 
+    {
         var JiMonster = MonsterManager.Instance.ClosetMonster;
         if (!JiMonster) return;
 
-        if (CurrSpeedDict.TryGetValue(JiMonster.currentMonsterState.ToString(), out Func<string, float> incrFunc)) {
+        if (CurrSpeedDict.TryGetValue(JiMonster.currentMonsterState.ToString(), out Func<string, float> incrFunc)) 
+        {
             JiMonster.monsterCore.AnimationSpeed = JiAnimatorSpeed.Value + incrFunc(JiMonster.LastClipName);
         }
         else 
@@ -503,7 +501,8 @@ public class EnlightenedJi : BaseUnityPlugin {
         JiStunState.enabled = JiMonster.currentMonsterState == BossGeneralStates[6];
     };
 
-    private IEnumerator JiHPChange(float newHp, float phase2Ratio) {
+    private IEnumerator JiHPChange(float newHp, float phase2Ratio) 
+    {
         while (!MonsterManager.Instance.ClosetMonster)
         {
             yield return null;
@@ -520,31 +519,36 @@ public class EnlightenedJi : BaseUnityPlugin {
 
     }
 
-    private static MonsterStateGroupSequence GetCurrentSequence(){
+    private static MonsterStateGroupSequence GetCurrentSequence()
+    {
         Type type = attackSequenceModule.GetType();
         FieldInfo fieldInfo = type.GetField("sequence", BindingFlags.Instance | BindingFlags.NonPublic);
         MonsterStateGroupSequence sequenceValue = (MonsterStateGroupSequence)fieldInfo.GetValue(attackSequenceModule);
         return sequenceValue;
     }
 
-    private MonsterStateGroupSequence getGroupSequence1(string name){
+    private MonsterStateGroupSequence getGroupSequence1(string name)
+    {
         return GameObject.Find($"{jiAttackSequences1Path}{name}").GetComponent<MonsterStateGroupSequence>();
     }
 
-    private MonsterStateGroupSequence getGroupSequence2(string name){
+    private MonsterStateGroupSequence getGroupSequence2(string name)
+    {
         return GameObject.Find($"{jiAttackSequences2Path}{name}").GetComponent<MonsterStateGroupSequence>();
     }
 
-    private MonsterStateGroup getGroup(string name){
+    private MonsterStateGroup getGroup(string name)
+    {
         return GameObject.Find($"{jiAttackGroupsPath}{name}").GetComponent<MonsterStateGroup>();
     }
 
-    private BossGeneralState getBossGeneralState(string name){
+    private BossGeneralState getBossGeneralState(string name)
+    {
         return GameObject.Find($"{jiAttackStatesPath}{name}").GetComponent<BossGeneralState>();
     }
 
-    public void GetAttackGameObjects(){
-
+    public void GetAttackGameObjects()
+    {
         // Object Paths
         string GeneralBossFightPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/";
         jiBossPath = GeneralBossFightPath + "LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/";
@@ -605,13 +609,16 @@ public class EnlightenedJi : BaseUnityPlugin {
 
         // Logger.LogInfo("Got Phase Transition Text");
         
-        HurtInterrupt = GameObject.Find($"{jiBossPath}MonsterCore/Animator(Proxy)/Animator/LogicRoot/HurtInterrupt").GetComponent<MonsterHurtInterrupt>();
+        HurtInterrupt = GameObject.Find(jiBossPath + 
+            "MonsterCore/Animator(Proxy)/Animator/LogicRoot/HurtInterrupt").GetComponent<MonsterHurtInterrupt>();
 
         // Logger.LogInfo("Got attack game objects");
     }
 
-    private Weight<MonsterState> CreateWeight(MonsterState state){
-        return new Weight<MonsterState>{
+    private Weight<MonsterState> CreateWeight(MonsterState state)
+    {
+        return new Weight<MonsterState>
+        {
             weight = 1,
             option = state
         };
@@ -631,7 +638,8 @@ public class EnlightenedJi : BaseUnityPlugin {
             // newQueue.Add(BossGeneralStates[attackIndex]);
         }
 
-        MonsterStateWeightSetting newWeightSetting = new MonsterStateWeightSetting {
+        MonsterStateWeightSetting newWeightSetting = new MonsterStateWeightSetting 
+        {
             stateWeightList = newStateWeightList, queue = new List<MonsterState>(), customizedInitQueue = new List<MonsterState>()
         };
         newAttackGroup = GO.AddComponent<MonsterStateGroup>();
@@ -662,8 +670,10 @@ public class EnlightenedJi : BaseUnityPlugin {
 
 
     // SOMETHING HERE IN PHASE 2 IS ALLOWING FOR SMALL BLACK HOLE BIG BLACK HOLE BACK TO BACK AND THAT NOT GOOD
-    public void AlterAttacks(){
-        if (Sequences1[Default].AttackSequence.Contains(Groups[SneakAttack])) {
+    public void AlterAttacks()
+    {
+        if (Sequences1[Default].AttackSequence.Contains(Groups[SneakAttack])) 
+        {
             return;
         }
 

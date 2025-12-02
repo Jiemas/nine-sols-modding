@@ -23,72 +23,57 @@ public class ColorChange {
     public static Material material = null!;
     private static int stayRange = 1;
 
-    // public static (float x, float y, float z)[] originalColors = 
-    // [
-    //   (5f, 5f, 5f),  // Black
-    //   (247f, 248f, 241f), // Fur White 
-    //   (186f, 240f, 227f),   // Eye Baby Blue
-    //   (79f, 193f, 129f), // Green Claws/Headband
-    //   (104f, 24f, 23f),  // Cape Red 
-    //   (228f, 190f, 106f), // Robe Yellow
-    //   (212f, 203f, 167f), // Tan Robe Highlight
-    // //   (223f, 86f, 96f) // Crimson/Tai Danger Red
-    // ];
-
-    // public static ((float x, float y, float z) src, (float x, float y, float z) dst)[] colorPairs = new ((float x, float y, float z) src, (float x, float y, float z) dst)[originalColors.Length];
-
-    // private static Vector3[] srcColors = new Vector3[originalColors.Length * (int) Math.Pow(stayRange * 2 + 1, 3)];
-
-    // private static Vector3[] dstColors = new Vector3[originalColors.Length * (int) Math.Pow(stayRange * 2 + 1, 3)];
-
-    private static string spritePath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/";
+    private static string animatorPath = "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/";
+    private static string spritePath = $"{animatorPath}LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/";
     private static string[] jiSpritePaths = 
     [
         // "A10S5/Room/Boss And Environment Binder/1_DropPickable 亮亮 FSM Variant/ItemProvider/DropPickable FSM Prototype/FSM Animator/VIEW/DummyJeeAnimator/View/Jee/JeeSprite",
         // "A10S5/Room/Boss And Environment Binder/1_DropPickable 亮亮 FSM Variant/ItemProvider/DropPickable FSM Prototype/FSM Animator/AfterShowView/DummyJeeAnimator/View/Jee/JeeSprite",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/JeeSprite",
+        $"{spritePath}Jee/JeeSprite",
         // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/DummyJeeAnimator/View/Jee/JeeSprite",
         // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]FirstTimeContact/DummyJeeAnimator/View/Jee/JeeSprite",
         // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]SecondTimeContact/DummyJeeAnimator/View/Jee/JeeSprite",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/JeeSprite",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/Cloak",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/Arm",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/[CutScene]BossDying/[Timeline]/DummyJeeAnimator/View/Jee/JeeSprite",
+        $"{animatorPath}[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/JeeSprite",
+        $"{animatorPath}[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/Cloak",
+        $"{animatorPath}[CutScene]BossAngry_Cutscene/[Timeline]/DummyJeeAnimator/View/Jee/Arm",
+        $"{animatorPath}[CutScene]BossDying/[Timeline]/DummyJeeAnimator/View/Jee/JeeSprite",
 
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/Cloak",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Jee/Arm",
-        // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/Attack_TeleportSword/Sprite"
+        $"{spritePath}Jee/Cloak",
+        $"{spritePath}Jee/Arm",
+        // $"{spritePath}Effect/Attack_TeleportSword/Sprite"
     ];
 
     private static string[] crimsonSpritePaths =
     [
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/Jee_Sitck/Effect/EffectSprite",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/Attack_TeleportSword/Sprite",
-        // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/JeeStaffTip/Effect_BEAM/STPBALL/STPBALL2D",
-        // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/JeeStaffTip/Effect_BEAM/STPBALL/Light",
-        // "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/JeeStaffTip/Effect_BEAM/Light (1)",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/LaserAltar/P_LaserExplosion/Sprite/",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Effect/LaserAltar/P_LaserExplosion/Sprite/light"
+        $"{spritePath}Weapon/Jee_Sitck/Effect/EffectSprite",
+        $"{spritePath}Effect/Attack_TeleportSword/Sprite",
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/STPBALL/STPBALL2D",
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/STPBALL/Light",
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/Light (1)",
+        $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/",
+        $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/light"
     ];
 
     private static string[] crimsonParticlePaths =
     [
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/JeeStaffTip/Effect_BEAM/P_Charging",
-        "A10S5/Room/Boss And Environment Binder/General Boss Fight FSM Object 姬 Variant/FSM Animator/LogicRoot/---Boss---/BossShowHealthArea/StealthGameMonster_Boss_Jee/MonsterCore/Animator(Proxy)/Animator/View/Weapon/JeeStaffTip/Effect_BEAM/P_ScretTreePower B"
+        $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_Charging",
+        $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_ScretTreePower B"
     ];
 
     public static SpriteRenderer[] jiSprites = new SpriteRenderer[jiSpritePaths.Length];
     public static SpriteRenderer[] crimsonSprites = new SpriteRenderer[crimsonSpritePaths.Length];
-    public static ParticleSystemRenderer[] crimsonParticles = new ParticleSystemRenderer[crimsonParticlePaths.Length];
+    public static ParticleSystem[] crimsonParticles = new ParticleSystem[crimsonParticlePaths.Length];
 
-    private static Func<string, (float x, float y, float z)> parseTuple =
-        s => {
-            var p = s.Split(',');
-            return new (float.Parse(p[0]), float.Parse(p[1]), float.Parse(p[2]));
-        };
+    public static Func<string, (float x, float y, float z)> parseTuple = s => 
+    {
+        var p = s.Split(',');
+        return new (float.Parse(p[0]), float.Parse(p[1]), float.Parse(p[2]));
+    };
 
     static public void InitializePairs(
-        ((float x, float y, float z) src, (float x, float y, float z) dst)[] pairs, (float x, float y, float z)[] leftTuple, string[] rightString)
+        ((float x, float y, float z) src, (float x, float y, float z) dst)[] pairs, 
+        (float x, float y, float z)[] leftTuple, 
+        string[] rightString)
     {
         for (int i = 0; i < leftTuple.Length; i++) 
         {
@@ -96,12 +81,14 @@ public class ColorChange {
         }
     }
 
-    static private float ReturnInRange(float n) {
+    static private float ReturnInRange(float n) 
+    {
         return Math.Min(Math.Max(n, 0), 255);
     }
 
     static private void initializeArr(
-        ((float x, float y, float z) src, (float x, float y, float z) dst)[] pairs, Vector3[] srcArr, Vector3[] dstArr)
+        ((float x, float y, float z) src, (float x, float y, float z) dst)[] pairs, 
+        Vector3[] srcArr, Vector3[] dstArr)
     {
         int index = 0;
         foreach (((float x, float y, float z) src, (float x, float y, float z) dst) in pairs)
@@ -130,12 +117,14 @@ public class ColorChange {
             crimsonSprites[i] = GameObject.Find(crimsonSpritePaths[i]).GetComponent<SpriteRenderer>();
         }
         for (int i = 0; i < crimsonParticles.Length; i++) {
-            crimsonParticles[i] = GameObject.Find(crimsonParticlePaths[i]).GetComponent<ParticleSystemRenderer>();
+            crimsonParticles[i] = GameObject.Find(crimsonParticlePaths[i]).GetComponent<ParticleSystem>();
         }
     }
 
-    static private void InitializeMat(Material mat, (float x, float y, float z)[] originalColors, string[] newColors) {
-        if (originalColors.Length != newColors.Length) {
+    static private void InitializeMat(Material mat, (float x, float y, float z)[] originalColors, string[] newColors) 
+    {
+        if (originalColors.Length != newColors.Length) 
+        {
             ToastManager.Toast("Arrays not same length!");
             return;
         }
@@ -151,7 +140,8 @@ public class ColorChange {
         mat.SetFloat("_LUTSize", lutSize);
     }
 
-    static public void InitializeJiMat(Material mat, string[] newColors) {
+    static public void InitializeJiMat(Material mat, string[] newColors) 
+    {
         (float x, float y, float z)[] ogColors = 
             [
                 (1f, 1f, 1f),  // Black
@@ -165,7 +155,8 @@ public class ColorChange {
         InitializeMat(mat, ogColors, newColors);
     }
 
-    static public void InitializeCrimsonMat(Material mat, string[] newColors) {
+    static public void InitializeCrimsonMat(Material mat, string[] newColors) 
+    {
         (float x, float y, float z)[] ogColors = 
             [
                 (1f, 1f, 1f),  // Black
@@ -186,16 +177,27 @@ public class ColorChange {
         }
     }
 
-    static public void updateCrimsonSprites(Material mat) {
-        foreach (SpriteRenderer crimsonSprite in crimsonSprites) {
+    static public void updateCrimsonSprites(Material mat) 
+    {
+        foreach (SpriteRenderer crimsonSprite in crimsonSprites) 
+        {
             if (crimsonSprite.material != mat) {
                 crimsonSprite.material = mat;
             }
         }
-        foreach (ParticleSystemRenderer crimsonParticle in crimsonParticles) {
-            if (crimsonParticle.material != mat) {
-                crimsonParticle.material = mat;
-            }
+    }
+
+    static public void updateCrimsonParticles(Color color) 
+    {
+        foreach (ParticleSystem crimsonParticle in crimsonParticles) 
+        {
+            var main = crimsonParticle.main;
+            var colorOverLifetime = crimsonParticle.colorOverLifetime;
+            var colorBySpeed = crimsonParticle.colorBySpeed;
+
+            colorOverLifetime.color = color;
+            colorBySpeed.color = color;
+            main.startColor = color;
         }
     }
 }

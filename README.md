@@ -2,7 +2,7 @@
 
 >**"Ji decided to read the hexagrams one last time and learned he did not need to hold back."**
 
-A mod that makes Ji harder by increasing health, attack sequence length, and move variety. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
+A mod that makes Ji harder by increasing health, attack sequence length, move variety, and speed. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
 
 # Installation
 Can use a mod manager of your choice or manual installation.
@@ -13,18 +13,21 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - Phase 1 HP increased to 6500
 - Phase 2 HP increased to 10750
 - Animation speed increased by 20% generally. All further speed increases are in addition to this 20% increase.
-- You can install BepinExConfigurationManager to modify the HP and move speed
 - Included attacks originally only available in phase 2 into phase 1
 - Minimized time Ji is vulnerable to attack
 - Disabled hurt interrupt except during divination
 - Increased Ji's speed of deploying altars (Health, Lasers, Black Holes)
 - Every attack sequence now ends with a "sneak attack" that may be an accelerated sword attack, laser altar, black hole, or crimson attack
+- Modified Ji's sprite to a darker color theme, inspired by [Ji Fanart by MOMONIAW](https://x.com/othername_/status/1989268097065517482?t=JuFWv_3NP4yR8Ky-SXweEQ&s=19)
+- Changed crimson attack color to golden
 
 ## Phase 1
 - Changed boss title from Ji to Enlightened Ji
 - All attack sequences end with 2 crimson attacks and a sneak attack
-- Chance for blizzard attack, specific sword attacks, and crimson attacks to be accelerated
+- Chance for blizzard attack, certain sword attacks, and crimson attacks to be accelerated
 - Small chance for any attack to be accelerated
+- Accelerated big black hole attack
+- Accelerated hard laser altar attack
 
 ### Sword Attack Sequence
 - Modified to now be 4 flying sword attacks
@@ -39,12 +42,12 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - Modified to now be an easy laser altar, blizzard, a sword attack, and a blizzard again
 
 ## Phase 2
-- Boss title changes from Enlightened Ji to The Kunlun Immortal
+- Changed boss title from Ji to The Kunlun Immortal
 - All attack sequences end with a hard laser altar, 3 crimson attacks, and a sneak attack
-- Increased chance for blizzard attack, specific sword attacks, and crimson attacks to be accelerated (even more than phase 1)
-- Chance for any attack to be accelerated
-- Big Black Hole attack is greatly accelerated
-- Placement of hard laser altar is accelerated
+- Increased chance for blizzard attack, specific sword attacks, and crimson attacks to be accelerated
+- Increased chance for any attack to be accelerated
+- Accelerated big black hole attack
+- Accelerated hard laser altar attack
 
 ### Opening
 - Modified to be a sequence of 17 attacks that is every common combo usually experienced during phase 2
@@ -75,16 +78,14 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 ## Phase Transition
 - Increased variety of messages that can appear during phase transition
 - None of the messages are canon, just something I can imagine Ji saying
-- Small chance for nonsensical messages
+- Chance for nonsensical messages
 
 ## Known Bugs/Issues
-- A flying sword can rarely move harmlessly through Yi, not causing damage or giving Yi a Qi charge
-- Black holes (Small and big) can lower into the ground
-- Yi can rarely take damage from seemingly nowhere
-   - I suspect this is either due to the increased animation speed causing hitbox issues or my custom attack groups somehow causing Ji to launch 2 attacks simultaneously, one visible and one invisible
-   - This issue most commonly occurs while near an altar (Laser or Black Hole) and Ji launches an attack
-   - While not frequent, this can be a run-ender, especially when on low health or attempting hitless
-   - I am working on identifying and fixing this issue
+- Flying swords have a chance to move harmlessly through Yi, not causing damage or allowing a parry
+- Black holes have a chance to lower into the ground, most likely due to the speed increase
+- Laser altars have a chance to emit an invisible, third laser circle
+   - The most recent version should have resolved this issue. If still occuring, let me know
+- Small graphical errors are visible in certain animations, due to material and shader modifications
 
 ## Tips
 - You can and should unbounded counter black holes. This prevents them from damaging Yi.
@@ -92,6 +93,7 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - Being airborne during fast blizzard attacks allows for parries without needing to rapidly change orientation
 - Swift Descent Jade is especially useful in this fight as there are many attacks that require careful positioning and dashing
    - With this jade equipped, Yi can perform an aeriel down dash through a laser circle without taking damage
+- Steely Jade is especially useful for this fight, as Ji does not give a lot of opportunities to do a full 5-Qi blast
 - A consistent ranged attack is helpful for destroying laser altars too far away when Yi's movement is prevented by a black hole
 - Ji is not stunned by a 5 qi charge full control unless while doing divination
 - Avoid trying to heal in the middle of an attack sequence unless the Quick Dose Jade is equipped
@@ -99,8 +101,10 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 
 ## Showcase
 - Youtube Video: [Nine Sols Enlightened Ji Mod, V1.0.2](https://youtu.be/lR0jhQSGYj0)
+- Github Repository: [NineSolsEnlightenedJi] (https://github.com/Jiemas/NineSolsEnlightenedJi)
 
 ## Acknowledgements
 - Code was written through heavy reference of MicheliniDev's Eigong Prime Mod, KaitoMajima's Promised Eigong Mod, and Jakob Hellermann's Example Mod.
 - The Unity Explorer Mod was essential to figuring out object paths and attack logic
+- ChatGPT was used, especially for the shader and material code (that stuff is black magic), so thanks to all the Unity discussions online that OpenAI stole
 - Thanks to everyone in the modding discord for their comments and suggestions!
