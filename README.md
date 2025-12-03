@@ -5,8 +5,13 @@
 A mod that makes Ji harder by increasing health, attack sequence length, move variety, and speed. The goal was to make the boss fight around as hard as unmodded Normal Eigong.
 
 # Installation
-Can use a mod manager of your choice or manual installation.
-More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols.wiki.gg/wiki/Community:Modding).
+- Can use a mod manager of your choice or manual installation.
+- For mod manager, no extra steps required
+- For manual installation, in addition to placing the dll file appropriately, the zip file includes 'EnlightenedJiBundle'
+   - Move 'EnlightenedJiBundle' to the AppData folder of NineSols
+      - Ex: Users\XXX\Data\LocalLow\RedCandleGames\NineSols
+   - Incorrect placement will result in a normal-colored Ji
+- More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols.wiki.gg/wiki/Community:Modding).
 
 # Changes
 ## General
@@ -20,6 +25,27 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - Every attack sequence now ends with a "sneak attack" that may be an accelerated sword attack, laser altar, black hole, or crimson attack
 - Modified Ji's sprite to a darker color theme, inspired by [Ji Fanart by MOMONIAW](https://x.com/othername_/status/1989268097065517482?t=JuFWv_3NP4yR8Ky-SXweEQ&s=19)
 - Changed crimson attack color to golden
+
+## BepinEx Configuration Manager
+- Allows you to modify different parts of the mod
+- All modifications require a retry to fully take effect
+
+### General Options
+- Disables/Enables changes to HP, attack sequence, speed, and sprite color
+
+### Speed Options
+- Must have enabled speed changes
+- Modify the base speed at which Ji's attacks occur
+
+### HP Options
+- Must have enabled HP changes
+- Modify Ji's health at phase 1
+- Modify the ratio used to calculate Ji's phase 2 HP (Phase 1 HP * ratio)
+
+### Color Options
+- Must have enabled color changes
+- Modify keyboard shortcut to reload material and shaders used to modify colors
+- Modify the colors based on RGB value
 
 ## Phase 1
 - Changed boss title from Ji to Enlightened Ji
@@ -83,8 +109,11 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 ## Known Bugs/Issues
 - Flying swords have a chance to move harmlessly through Yi, not causing damage or allowing a parry
 - Black holes have a chance to lower into the ground, most likely due to the speed increase
-- Laser altars have a chance to emit an invisible, third laser circle
-   - The most recent version should have resolved this issue. If still occuring, let me know
+- Yi can rarely take damage from seemingly nowhere
+   - I suspect this is due to the attack sequence modifications somehow creating an invisible damage source during a laser altar
+   - This issue most commonly occurs while near an altar (Laser or Black Hole) and Ji launches an attack
+   - While not frequent, this can be a run-ender, especially when on low health or attempting hitless
+   - I am working on identifying and fixing this issue
 - Small graphical errors are visible in certain animations, due to material and shader modifications
 
 ## Tips
@@ -100,7 +129,7 @@ More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols
 - There is enough time to perform unbounded counters on both crimson attacks, even in their accelerated state
 
 ## Showcase
-- Youtube Video: [Nine Sols Enlightened Ji Mod, V1.0.2](https://youtu.be/lR0jhQSGYj0)
+- Youtube Video: [Nine Sols Enlightened Ji Mod, V1.1.0](https://youtu.be/lR0jhQSGYj0)
 - Github Repository: [NineSolsEnlightenedJi] (https://github.com/Jiemas/NineSolsEnlightenedJi)
 
 ## Acknowledgements

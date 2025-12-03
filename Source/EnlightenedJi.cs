@@ -117,6 +117,8 @@ public class EnlightenedJi : BaseUnityPlugin
     // Miscellaneous Variables
     private static Color crimsonColor;
 
+    private static string BundleName = "EnlightenedJiBundle";
+
     private static string temp = "";
 
     private static int randomNum = 0;
@@ -274,9 +276,34 @@ public class EnlightenedJi : BaseUnityPlugin
         reloadMaterialKeyboardShortcut = Config.Bind(color,
             "*materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
             "Press after modifying color replacements to reload material and shaders with new colors");
-        KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
+        // KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
     }
 
+
+    public AssetBundle? LoadBundle()
+    {
+        AssetBundle bundle = null!;
+
+        string persistentPath = Path.Combine(Application.persistentDataPath, BundleName);
+        if (File.Exists(persistentPath))
+        {
+            bundle = AssetBundle.LoadFromFile(persistentPath);
+            if (bundle != null) return bundle;
+        }
+
+        string pluginDir = Paths.PluginPath;
+        string modDir = Path.Combine(pluginDir, "JiSupremacy-EnlightenedJi");
+        string installedBundle = Path.Combine(modDir, BundleName);
+
+        if (File.Exists(installedBundle))
+        {
+            bundle = AssetBundle.LoadFromFile(installedBundle);
+            if (bundle != null) return bundle;
+        }
+
+        Logger.LogInfo($"[EnlightenedJi] Failed to load bundle from both locations:\n{persistentPath}\n{installedBundle}");
+        return null;
+    }
 
     private void Awake() 
     {
@@ -295,8 +322,10 @@ public class EnlightenedJi : BaseUnityPlugin
         JiStateChange = Pass;
         JiSpriteUpdate = Pass;
 
-        string bundlePath = Path.Combine(Application.persistentDataPath, "mymodbundle");
-        bundle = AssetBundle.LoadFromFile(bundlePath);
+        bundle = LoadBundle();
+        
+        // string bundlePath = Path.Combine(Application.persistentDataPath, "EnlightenedJiBundle");
+        // bundle = AssetBundle.LoadFromFile(bundlePath);
         if (bundle is not null) 
         {
             mat = bundle.LoadAsset<Material>("RBFMat");
@@ -308,7 +337,7 @@ public class EnlightenedJi : BaseUnityPlugin
         }
 
         var crimsonTuple = ColorChange.parseTuple(crimsonReplace.Value);
-        crimsonColor = new Color(crimsonTuple.x, crimsonTuple.y, crimsonTuple.z);
+        crimsonColor = new Color(crimsonTuple.x / 255, crimsonTuple.y / 255, crimsonTuple.z / 255);
 
     }
 
@@ -323,43 +352,58 @@ public class EnlightenedJi : BaseUnityPlugin
         {
             if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)" || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") 
             {
-                // Logger.LogInfo("Found: " + go.name);
                 Transform sprite = go.transform.Find("View/Sprite");
-                // Logger.LogInfo("Got: " + sprite);
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
                 spriteRenderer.material = mat;
             } 
             else if (go.name == "Effect_TaiDanger(Clone)" || go.name == "Effect_TaiDanger") 
             {
-                // Logger.LogInfo("Found: " + go.name);
                 Transform sprite = go.transform.Find("Sprite");
-                // Logger.LogInfo("Got: " + sprite);
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
-                // Logger.LogInfo("Got: " + spriteRenderer);
                 spriteRenderer.material = crimsonMat;
             } 
-            else if (go.name == "CircularDamage(Clone)" || go.name == "CircularDamage") 
-            {
-                go.AddComponent<DestroyOnDisable>();
-            }
+            // else if (go.name == "CircularDamage(Clone)" || go.name == "CircularDamage") 
+            // {
+            //     Logger.LogInfo("Found: " + go.name);
+            //     Transform particle = go.transform.Find("Animator/Effect_BEAM/P_ScretTreePowerCIRCLEGlow");
+            //     Logger.LogInfo("Found: " + particle);
+            //     var particleSystem = particle.GetComponent<ParticleSystem>();
+            //     Logger.LogInfo("Found: " + particleSystem);
+
+            //     var main = particleSystem.main;
+            //     var colorOverLifetime = particleSystem.colorOverLifetime;
+            //     var colorBySpeed = particleSystem.colorBySpeed;
+
+            //     colorOverLifetime.color = crimsonColor;
+            //     colorOverLifetime.enabled = true;
+            //     colorBySpeed.color = crimsonColor;
+            //     colorBySpeed.enabled = true;
+            //     main.startColor = crimsonColor;
+            //     Logger.LogInfo(main.startColor);
+            // }
         }
     }
 
     private void ReloadMaterial()
     {
+        if (bundle is null || mat is null)
+        {
+            return;
+        }
         ColorChange.InitializeJiMat(mat, [blackReplace.Value, furReplace.Value, eyeReplace.Value, 
             greenReplace.Value, capeReplace.Value, robeReplace.Value, tanReplace.Value]);
         ColorChange.InitializeCrimsonMat(crimsonMat, [blackReplace.Value, crimsonReplace.Value]);
         Logger.LogInfo("Reloaded material!");
         StartCoroutine(ModifyHiddenObjects());
-}
+    }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == "A10_S5_Boss_Jee")
         {
-
-            if (JiModifiedSprite.Value) 
+            KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
+            // Logger.LogInfo(Player.i);
+            if (JiModifiedSprite.Value && bundle is not null) 
             {
                 ColorChange.getSprites();
                 JiSpriteUpdate = ActionSpriteUpdate;
@@ -404,14 +448,11 @@ public class EnlightenedJi : BaseUnityPlugin
     private IEnumerator delayTitleChange()
     {
         yield return new WaitForSeconds(1f);
-        // Logger.LogInfo("delayTitleChange called!");
 
         RubyTextMeshProUGUI BossName = GameObject.Find(
             "GameCore(Clone)/RCG LifeCycle/UIManager/GameplayUICamera/MonsterHPRoot/BossHPRoot/UIBossHP(Clone)/Offset(DontKeyAnimationOnThisNode)/AnimationOffset/BossName")
             .GetComponent<RubyTextMeshProUGUI>();
         BossName.text = "The Kunlun Immortal";
-        // Logger.LogInfo("modified name called!");
-
     }
 
     private IEnumerator InitJiStateChange() 
@@ -427,6 +468,7 @@ public class EnlightenedJi : BaseUnityPlugin
     {
         ColorChange.updateJiSprite(mat);
         ColorChange.updateCrimsonSprites(crimsonMat);
+        ColorChange.updateCrimsonParticleRenderers(crimsonMat);
         ColorChange.updateCrimsonParticles(crimsonColor);
     };
 
@@ -454,9 +496,9 @@ public class EnlightenedJi : BaseUnityPlugin
             }
 
             // Logger.LogInfo($"'{temp}'");
-            Logger.LogInfo(JiMonster.currentMonsterState.ToString());
-            Logger.LogInfo(GetCurrentSequence());
-            Logger.LogInfo("");
+            // Logger.LogInfo(JiMonster.currentMonsterState.ToString());
+            // Logger.LogInfo(GetCurrentSequence());
+            // Logger.LogInfo("");
 
             if (JiMonster.currentMonsterState == PhaseChangeState)
             {
@@ -557,8 +599,6 @@ public class EnlightenedJi : BaseUnityPlugin
         jiAttackSequences2Path = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateSequence_Phase2/";
         jiAttackGroupsPath = jiBossPath + "MonsterCore/AttackSequenceModule/MonsterStateGroupDefinition/";
 
-        // Logger.LogInfo("Getting Game Objects");
-
         // Gathering BossGeneralStates & Other States
         for (int i = 1; i < Attacks.Length; i++)
         {
@@ -570,8 +610,6 @@ public class EnlightenedJi : BaseUnityPlugin
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
         Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
-
-        // Logger.LogInfo("Got BossGeneralStates");
 
         // Gathering MonsterGroupStateSequences
         for (int i = 0; i < SequenceStrings1.Length; i++)
@@ -587,8 +625,6 @@ public class EnlightenedJi : BaseUnityPlugin
             $"{jiBossPath}MonsterCore/AttackSequenceModule/SpecialHealthSequence(Jee_Divination_Logic)")
             .GetComponent<MonsterStateGroupSequence>();
 
-        // Logger.LogInfo("Got MonsterGroupStateSequences");
-
         // Gathering existing MonsterGroupState
         int j = 0;
         foreach ((int sequence, int index) in ExistingGroupPairs)
@@ -598,8 +634,6 @@ public class EnlightenedJi : BaseUnityPlugin
         Groups[BigBlackHole] = Sequences2[Opening].AttackSequence[0];
         Groups[EasyOrHardFinisher] = Sequences2[Default].AttackSequence[5];
 
-        // Logger.LogInfo("Got MonsterGroupStates");
-
         // Gathering Miscellaneous Object
         attackSequenceModule = GameObject.Find($"{jiBossPath}MonsterCore/AttackSequenceModule/").GetComponent<AttackSequenceModule>();
         
@@ -607,12 +641,8 @@ public class EnlightenedJi : BaseUnityPlugin
             "[CutScene]BossAngry_Cutscene/BubbleRoot/SceneDialogueNPC/BubbleRoot/DialogueBubble/Text")
             .GetComponent<RubyTextMeshPro>();
 
-        // Logger.LogInfo("Got Phase Transition Text");
-        
         HurtInterrupt = GameObject.Find(jiBossPath + 
             "MonsterCore/Animator(Proxy)/Animator/LogicRoot/HurtInterrupt").GetComponent<MonsterHurtInterrupt>();
-
-        // Logger.LogInfo("Got attack game objects");
     }
 
     private Weight<MonsterState> CreateWeight(MonsterState state)
@@ -739,7 +769,6 @@ public class EnlightenedJi : BaseUnityPlugin
             [(EasyOrHardFinisher, 2), (EasyOrHardFinisher, 3), (EasyOrHardFinisher, 4)], 
             [(HardLaserAltar, 2), (BigBlackHole, 3), (LongerAttack, 4), (HardLaserAltar, 5)]
         );
-        // Logger.LogInfo("Altered Phase 1 and 2 Attack Sequences");
     }
 
     private void OnDestroy()

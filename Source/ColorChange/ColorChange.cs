@@ -50,19 +50,32 @@ public class ColorChange {
         // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/STPBALL/STPBALL2D",
         // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/STPBALL/Light",
         // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/Light (1)",
-        $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/",
-        $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/light"
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/Sprite/light"
     ];
 
     private static string[] crimsonParticlePaths =
     [
-        $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_Charging",
-        $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_ScretTreePower B"
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_Charging",
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_ScretTreePower B",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/P_LaserA",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/P_LaserL",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/P_LaserR"
+    ];
+
+    private static string[] crimsonParticleRendererPaths =
+    [
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_Charging",
+        // $"{spritePath}Weapon/JeeStaffTip/Effect_BEAM/P_ScretTreePower B",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/P_LaserL",
+        // $"{spritePath}Effect/LaserAltar/P_LaserExplosion/P_LaserR"
     ];
 
     public static SpriteRenderer[] jiSprites = new SpriteRenderer[jiSpritePaths.Length];
     public static SpriteRenderer[] crimsonSprites = new SpriteRenderer[crimsonSpritePaths.Length];
     public static ParticleSystem[] crimsonParticles = new ParticleSystem[crimsonParticlePaths.Length];
+    public static ParticleSystemRenderer[] crimsonParticleRenderers = new ParticleSystemRenderer[crimsonParticleRendererPaths.Length];
+
 
     public static Func<string, (float x, float y, float z)> parseTuple = s => 
     {
@@ -118,6 +131,9 @@ public class ColorChange {
         }
         for (int i = 0; i < crimsonParticles.Length; i++) {
             crimsonParticles[i] = GameObject.Find(crimsonParticlePaths[i]).GetComponent<ParticleSystem>();
+        }
+        for (int i = 0; i < crimsonParticleRenderers.Length; i++) {
+            crimsonParticleRenderers[i] = GameObject.Find(crimsonParticleRendererPaths[i]).GetComponent<ParticleSystemRenderer>();
         }
     }
 
@@ -187,6 +203,16 @@ public class ColorChange {
         }
     }
 
+    static public void updateCrimsonParticleRenderers(Material mat) 
+    {
+        foreach (ParticleSystemRenderer crimsonRenderer in crimsonParticleRenderers) 
+        {
+            if (crimsonRenderer.material != mat) {
+                crimsonRenderer.material = mat;
+            }
+        }
+    }
+
     static public void updateCrimsonParticles(Color color) 
     {
         foreach (ParticleSystem crimsonParticle in crimsonParticles) 
@@ -196,7 +222,9 @@ public class ColorChange {
             var colorBySpeed = crimsonParticle.colorBySpeed;
 
             colorOverLifetime.color = color;
+            colorOverLifetime.enabled = true;
             colorBySpeed.color = color;
+            colorBySpeed.enabled = true;
             main.startColor = color;
         }
     }

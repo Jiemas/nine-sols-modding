@@ -2,7 +2,7 @@
 schemaVersion = "0.0.1"
 
 [package]
-namespace = "Jiemas"
+namespace = "JiSupremacy"
 name = "EnlightenedJi"
 versionNumber = "1.1.0"
 description = "Mods Ji to be harder"
@@ -17,6 +17,7 @@ containsNsfwContent = false
 [build]
 icon = "./Ji_Young_Edited.png"
 readme = "./README.md"
+EnlightenedJiBundle = "./EnlightenedJiBundle"
 outdir = "./build"
 
 [[build.copy]]
