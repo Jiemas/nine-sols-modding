@@ -24,6 +24,10 @@ outdir = "./build"
 source = "build/dll"
 target = "."
 
+[[build.copy]]
+source = "EnlightenedJiBundle"
+target = "EnlightenedJiBundle"
+
 [publish]
 repository = "https://thunderstore.io"
 communities = [ "nine-sols" ]
