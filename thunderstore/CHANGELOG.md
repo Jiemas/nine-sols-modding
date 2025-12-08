@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.1](na) (2025-12-X)
+## [1.1.1](https://github.com/Jiemas/NineSolsEnlightenedJi/compare/v1.1.0...v1.1.1) (2025-12-X)
 - Updated README.md to add info about Mac incompatibility
 - Added this changelog
 - Fixed bug where speed boost was applying to other bosses
