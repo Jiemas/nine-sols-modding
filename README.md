@@ -8,8 +8,11 @@ A mod that makes Ji harder by increasing health, attack sequence length, move va
 - Can use a mod manager of your choice or manual installation.
 - For mod manager, no extra steps required
 - For manual installation, in addition to placing the dll file appropriately, the zip file includes 'EnlightenedJiBundle'
-   - Move 'EnlightenedJiBundle' to the AppData folder of NineSols
-      - Ex: Users\XXX\Data\LocalLow\RedCandleGames\NineSols
+   - Windows Users:
+      - Move 'EnlightenedJiBundle' to the AppData folder of NineSols
+         - Ex: Users\XXX\Data\LocalLow\RedCandleGames\NineSols
+   - Mac Users:
+      - The material and shader in 'EnlightenedJiBundle' is not compatible with MacOS, so color modifications do not work as of now
    - Incorrect placement will result in a normal-colored Ji
 - More info on modding is on the [Nine Sols Wiki Page on Modding](https://ninesols.wiki.gg/wiki/Community:Modding).
 

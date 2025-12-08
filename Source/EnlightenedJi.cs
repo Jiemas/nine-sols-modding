@@ -443,6 +443,9 @@ public class EnlightenedJi : BaseUnityPlugin
             StartCoroutine(InitJiStateChange());
 
         }
+        else {
+            JiUpdate = Pass;
+        }
     }
 
     private IEnumerator delayTitleChange()
