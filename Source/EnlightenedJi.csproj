@@ -3,7 +3,7 @@
         <AssemblyName>EnlightenedJi</AssemblyName>
         <Description>Mods Ji to be harder, heavily inspired by MicheleniDev's Eigong Prime</Description>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.0.2</Version>
+        <Version>1.1.1</Version>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <PublishRelease>true</PublishRelease>

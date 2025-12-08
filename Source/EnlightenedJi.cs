@@ -124,6 +124,9 @@ public class EnlightenedJi : BaseUnityPlugin
     private static int randomNum = 0;
     private static bool firstMessage = true;
 
+    private static Material multiMaterial = null!;
+    private static Material taiMaterial = null!;
+
     private static System.Random random = new System.Random();
 
     private static PostureBreakState JiStunState = null!;
@@ -273,10 +276,9 @@ public class EnlightenedJi : BaseUnityPlugin
         robeReplace = Config.Bind(color, "robeReplace", "128,128,128", "Replaces the robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");        
         tanReplace = Config.Bind(color, "tanHighlightReplace", "201,207,203", "Replaces the secondary robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         crimsonReplace = Config.Bind(color, "crimsonReplace", "255,215,0", "Replaces the crimson attack color with specified RGB value (Must use \"##,##,##\" format)");
-        reloadMaterialKeyboardShortcut = Config.Bind(color,
-            "*materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
-            "Press after modifying color replacements to reload material and shaders with new colors");
-        // KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
+        // reloadMaterialKeyboardShortcut = Config.Bind(color,
+        //     "*materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
+        //     "Press after modifying color replacements to reload material and shaders with new colors");
     }
 
 
@@ -323,16 +325,12 @@ public class EnlightenedJi : BaseUnityPlugin
         JiSpriteUpdate = Pass;
 
         bundle = LoadBundle();
-        
-        // string bundlePath = Path.Combine(Application.persistentDataPath, "EnlightenedJiBundle");
-        // bundle = AssetBundle.LoadFromFile(bundlePath);
         if (bundle is not null) 
         {
             mat = bundle.LoadAsset<Material>("RBFMat");
             if (mat is not null) 
             {
                 crimsonMat = new Material(mat);
-                ReloadMaterial();
             }
         }
 
@@ -350,17 +348,26 @@ public class EnlightenedJi : BaseUnityPlugin
         var all = Resources.FindObjectsOfTypeAll<GameObject>();
         foreach (var go in all) 
         {
-            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)" || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") 
+            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)") // || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") 
             {
                 Transform sprite = go.transform.Find("View/Sprite");
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
-                spriteRenderer.material = mat;
+                if (multiMaterial is null && $"{spriteRenderer.material}" == "識破 (Instance) (UnityEngine.Material)") 
+                {
+                    multiMaterial = new Material(spriteRenderer.material);
+                }
+                spriteRenderer.material = JiModifiedSprite.Value ? mat : multiMaterial;
+
             } 
-            else if (go.name == "Effect_TaiDanger(Clone)" || go.name == "Effect_TaiDanger") 
+            else if (go.name == "Effect_TaiDanger(Clone)") // || go.name == "Effect_TaiDanger") 
             {
                 Transform sprite = go.transform.Find("Sprite");
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
-                spriteRenderer.material = crimsonMat;
+                if (taiMaterial is null && $"{spriteRenderer.material}" == "Sprites-Default (Instance) (UnityEngine.Material)") 
+                {
+                    taiMaterial = new Material(spriteRenderer.material);
+                }
+                spriteRenderer.material = JiModifiedSprite.Value ? crimsonMat : taiMaterial;
             } 
             // else if (go.name == "CircularDamage(Clone)" || go.name == "CircularDamage") 
             // {
@@ -386,7 +393,7 @@ public class EnlightenedJi : BaseUnityPlugin
 
     private void ReloadMaterial()
     {
-        if (bundle is null || mat is null)
+        if (bundle is null || mat is null || SceneManager.GetActiveScene().name != "A10_S5_Boss_Jee")
         {
             return;
         }
@@ -401,8 +408,8 @@ public class EnlightenedJi : BaseUnityPlugin
     {
         if (scene.name == "A10_S5_Boss_Jee")
         {
-            KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
-            // Logger.LogInfo(Player.i);
+            // KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
+            ReloadMaterial();
             if (JiModifiedSprite.Value && bundle is not null) 
             {
                 ColorChange.getSprites();
@@ -660,20 +667,17 @@ public class EnlightenedJi : BaseUnityPlugin
     private MonsterStateGroup CreateMonsterStateGroup(int[] AttacksList, string objectName)
     {
         List<Weight<MonsterState>> newStateWeightList = new List<Weight<MonsterState>>();
-        List<MonsterState> newQueue = new List<MonsterState>();
-        List<MonsterState> newInitQueue = new List<MonsterState>();
         GameObject GO = new GameObject($"{objectName}");
-        MonsterStateGroup newAttackGroup = new MonsterStateGroup();
+        MonsterStateGroup newAttackGroup = new();
 
         foreach (int attackIndex in AttacksList)
         {
             newStateWeightList.Add(Weights[attackIndex]);
-            // newQueue.Add(BossGeneralStates[attackIndex]);
         }
 
         MonsterStateWeightSetting newWeightSetting = new MonsterStateWeightSetting 
         {
-            stateWeightList = newStateWeightList, queue = new List<MonsterState>(), customizedInitQueue = new List<MonsterState>()
+            stateWeightList = newStateWeightList, queue = [], customizedInitQueue = []
         };
         newAttackGroup = GO.AddComponent<MonsterStateGroup>();
         newAttackGroup.setting = newWeightSetting;

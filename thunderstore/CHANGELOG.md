@@ -4,6 +4,8 @@
 - Updated README.md to add info about Mac incompatibility
 - Added this changelog
 - Fixed bug where speed boost was applying to other bosses
+- Fixed bug where disabling sprite color change did not disable crimson attack change
+- Fixed bug where crimson attack color change affected other bosses' crimson attack color
 
 ## [1.1.0](https://github.com/Jiemas/NineSolsEnlightenedJi/compare/916b7ae...872117b) (2025-12-3)
 - Improved speed boost code

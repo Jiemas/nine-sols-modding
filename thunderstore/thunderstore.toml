@@ -4,7 +4,7 @@ schemaVersion = "0.0.1"
 [package]
 namespace = "JiSupremacy"
 name = "EnlightenedJi"
-versionNumber = "1.1.0"
+versionNumber = "1.1.1"
 description = "Mods Ji to be harder"
 websiteUrl = "https://github.com/Jiemas/nine-sols-modding"
 containsNsfwContent = false
@@ -27,6 +27,10 @@ target = "."
 [[build.copy]]
 source = "EnlightenedJiBundle"
 target = "EnlightenedJiBundle"
+
+[[build.copy]]
+source = "CHANGELOG.md"
+target = "CHANGELOG.md"
 
 [publish]
 repository = "https://thunderstore.io"
