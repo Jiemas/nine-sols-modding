@@ -47,7 +47,6 @@ A mod that makes Ji harder by increasing health, attack sequence length, move va
 
 ### Color Options
 - Must have enabled color changes
-- Modify keyboard shortcut to reload material and shaders used to modify colors
 - Modify the colors based on RGB value
 
 ## Phase 1

@@ -42,8 +42,6 @@ public class EnlightenedJi : BaseUnityPlugin
     public static ConfigEntry<string> tanReplace = null!;
     public static ConfigEntry<string> crimsonReplace = null!;
 
-    private ConfigEntry<KeyboardShortcut> reloadMaterialKeyboardShortcut = null!;
-
     private static Material mat = null!;
     private static Material crimsonMat = null!;
     private static AssetBundle bundle = null!;
@@ -124,22 +122,19 @@ public class EnlightenedJi : BaseUnityPlugin
     private static int randomNum = 0;
     private static bool firstMessage = true;
 
-    private static Material multiMaterial = null!;
-    private static Material taiMaterial = null!;
-
-    private static System.Random random = new System.Random();
+    private static System.Random random = new();
 
     private static PostureBreakState JiStunState = null!;
 
-    private static StealthEngaging Engaging = null!;
     private static BossPhaseChangeState PhaseChangeState = null!;
 
     private static AttackSequenceModule attackSequenceModule = null!;
 
-    // private static RubyTextMeshProUGUI BossName = null!;
     private static RubyTextMeshPro PhaseTransitionText = null!;
 
     private static MonsterHurtInterrupt HurtInterrupt = null!;
+
+    // private static StealthEngaging Engaging = null!;
 
     private static Action JiUpdate = null!;
     private static Action JiSpeedChange = null!;
@@ -154,8 +149,7 @@ public class EnlightenedJi : BaseUnityPlugin
 
     private static Dictionary<string, Func<string, float>> CurrSpeedDict = null!;
 
-    private static Dictionary<string, Func<string, float>> SpeedDict1 = new Dictionary<string, Func<string, float>>
-    {
+    private static Dictionary<string, Func<string, float>> SpeedDict1 = new() {
         {"[1]Divination Free Zone (BossGeneralState)",                  _ => 0},
         {"[2][Short]Flying Projectiles (BossGeneralState)",             _ => randomAdd(3, 0.2f)},
         {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
@@ -175,8 +169,7 @@ public class EnlightenedJi : BaseUnityPlugin
         {"1_Engaging (StealthEngaging)",                               _ => 3f}
     };
 
-    private static Dictionary<string, Func<string, float>> SpeedDict2 = new Dictionary<string, Func<string, float>>
-    {
+    private static Dictionary<string, Func<string, float>> SpeedDict2 = new() {
         {"[1]Divination Free Zone (BossGeneralState)",                  _ => randomAdd(3, 0.2f)},
         {"[2][Short]Flying Projectiles (BossGeneralState)",             lastMove => afterFinisherCheck(lastMove) ? 0.65f : randomAdd(2, 0.3f)},
         {"[3][Finisher]BlackHoleAttack (BossGeneralState)",             _ => 2f},
@@ -276,9 +269,6 @@ public class EnlightenedJi : BaseUnityPlugin
         robeReplace = Config.Bind(color, "robeReplace", "128,128,128", "Replaces the robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");        
         tanReplace = Config.Bind(color, "tanHighlightReplace", "201,207,203", "Replaces the secondary robe color with specified RGB value on Ji's sprite (Must use \"##,##,##\" format)");
         crimsonReplace = Config.Bind(color, "crimsonReplace", "255,215,0", "Replaces the crimson attack color with specified RGB value (Must use \"##,##,##\" format)");
-        // reloadMaterialKeyboardShortcut = Config.Bind(color,
-        //     "*materialReloadShortcut", new KeyboardShortcut(KeyCode.H, KeyCode.LeftControl),
-        //     "Press after modifying color replacements to reload material and shaders with new colors");
     }
 
 
@@ -339,9 +329,10 @@ public class EnlightenedJi : BaseUnityPlugin
 
     }
 
-    // private static string[] circularObjects = ["CircularDamage_Inverse", "CircularDamage_Inverse(Clone)", "CircularDamage_Inverse_ForBlackHole", "CircularDamage_Inverse_ForBlackHole(Clone)",
-    //             "CircularDamage", "CircularDamage(Clone)"];
-    private static string[] circularObjects = ["CircularDamage_Inverse", "CircularDamage"];
+    private static string[] circularObjects = ["CircularDamage_Inverse", "CircularDamage_Inverse(Clone)", "CircularDamage_Inverse_ForBlackHole", "CircularDamage_Inverse_ForBlackHole(Clone)",
+                "CircularDamage", "CircularDamage(Clone)"];
+    // private static string[] circularObjects = ["TrapMonster_LaserAltar_Circle(Clone)", "TrapMonster_LaserAltar_Circle"];
+
     private IEnumerator ModifyHiddenObjects() 
     {
         while (SceneManager.GetActiveScene().name != "A10_S5_Boss_Jee") 
@@ -351,55 +342,28 @@ public class EnlightenedJi : BaseUnityPlugin
         var all = Resources.FindObjectsOfTypeAll<GameObject>();
         foreach (var go in all) 
         {
-            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)") // || go.name == "MultiSpriteEffect_Prefab 識破提示Variant") 
+            if (go.name == "MultiSpriteEffect_Prefab 識破提示Variant(Clone)")
             {
                 Transform sprite = go.transform.Find("View/Sprite");
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
-                if (multiMaterial is null && $"{spriteRenderer.material}" == "識破 (Instance) (UnityEngine.Material)") 
-                {
-                    multiMaterial = new Material(spriteRenderer.material);
-                }
-                spriteRenderer.material = JiModifiedSprite.Value ? mat : multiMaterial;
+                spriteRenderer.material = mat;
 
             } 
-            else if (go.name == "Effect_TaiDanger(Clone)") // || go.name == "Effect_TaiDanger") 
+            else if (go.name == "Effect_TaiDanger(Clone)")
             {
                 Transform sprite = go.transform.Find("Sprite");
                 var spriteRenderer = sprite.GetComponent<SpriteRenderer>();
-                if (taiMaterial is null && $"{spriteRenderer.material}" == "Sprites-Default (Instance) (UnityEngine.Material)") 
-                {
-                    taiMaterial = new Material(spriteRenderer.material);
-                }
-                spriteRenderer.material = JiModifiedSprite.Value ? crimsonMat : taiMaterial;
+                spriteRenderer.material = crimsonMat;
             } else if (circularObjects.Contains(go.name)) {
 
                 DestroyOnDisable foo = go.GetComponent<DestroyOnDisable>();
                 if (foo == null) 
                 {
-                    GameObject bar = Instantiate(go);
-                    DontDestroyOnLoad(bar);
+                    // GameObject bar = Instantiate(go);
+                    // DontDestroyOnLoad(bar);
                     go.AddComponent<DestroyOnDisable>();
                 }
             }
-            // else if (go.name == "CircularDamage(Clone)" || go.name == "CircularDamage") 
-            // {
-            //     Logger.LogInfo("Found: " + go.name);
-            //     Transform particle = go.transform.Find("Animator/Effect_BEAM/P_ScretTreePowerCIRCLEGlow");
-            //     Logger.LogInfo("Found: " + particle);
-            //     var particleSystem = particle.GetComponent<ParticleSystem>();
-            //     Logger.LogInfo("Found: " + particleSystem);
-
-            //     var main = particleSystem.main;
-            //     var colorOverLifetime = particleSystem.colorOverLifetime;
-            //     var colorBySpeed = particleSystem.colorBySpeed;
-
-            //     colorOverLifetime.color = crimsonColor;
-            //     colorOverLifetime.enabled = true;
-            //     colorBySpeed.color = crimsonColor;
-            //     colorBySpeed.enabled = true;
-            //     main.startColor = crimsonColor;
-            //     Logger.LogInfo(main.startColor);
-            // }
         }
     }
 
@@ -412,7 +376,7 @@ public class EnlightenedJi : BaseUnityPlugin
         ColorChange.InitializeJiMat(mat, [blackReplace.Value, furReplace.Value, eyeReplace.Value, 
             greenReplace.Value, capeReplace.Value, robeReplace.Value, tanReplace.Value]);
         ColorChange.InitializeCrimsonMat(crimsonMat, [blackReplace.Value, crimsonReplace.Value]);
-        Logger.LogInfo("Reloaded material!");
+        // Logger.LogInfo("Reloaded material!");
         StartCoroutine(ModifyHiddenObjects());
     }
 
@@ -420,7 +384,6 @@ public class EnlightenedJi : BaseUnityPlugin
     {
         if (scene.name == "A10_S5_Boss_Jee")
         {
-            // KeybindManager.Add(this, ReloadMaterial, () => reloadMaterialKeyboardShortcut.Value);
             try 
             {
                 ReloadMaterial();
@@ -512,7 +475,6 @@ public class EnlightenedJi : BaseUnityPlugin
             {
                 Logger.LogInfo($"InitJiStateChange Unexpected error: {ex.Message}");
             }
-
         }
         else {
             JiUpdate = Pass;
@@ -705,7 +667,7 @@ public class EnlightenedJi : BaseUnityPlugin
         BossGeneralStates[BigHurt] = GameObject.Find($"{jiBossPath}States/Hurt_BigState").GetComponent<BossGeneralState>();
         JiStunState = GameObject.Find($"{jiBossPath}States/PostureBreak/").GetComponent<PostureBreakState>();
         PhaseChangeState = GameObject.Find($"{jiBossPath}States/[BossAngry] BossAngry/").GetComponent<BossPhaseChangeState>();
-        Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
+        // Engaging = GameObject.Find($"{jiBossPath}States/1_Engaging").GetComponent<StealthEngaging>();
 
         // Gathering MonsterGroupStateSequences
         for (int i = 0; i < SequenceStrings1.Length; i++)
@@ -752,8 +714,8 @@ public class EnlightenedJi : BaseUnityPlugin
 
     private MonsterStateGroup CreateMonsterStateGroup(int[] AttacksList, string objectName)
     {
-        List<Weight<MonsterState>> newStateWeightList = new List<Weight<MonsterState>>();
-        GameObject GO = new GameObject($"{objectName}");
+        List<Weight<MonsterState>> newStateWeightList = new();
+        GameObject GO = new($"{objectName}");
         MonsterStateGroup newAttackGroup = new();
 
         foreach (int attackIndex in AttacksList)
@@ -761,8 +723,7 @@ public class EnlightenedJi : BaseUnityPlugin
             newStateWeightList.Add(Weights[attackIndex]);
         }
 
-        MonsterStateWeightSetting newWeightSetting = new MonsterStateWeightSetting 
-        {
+        MonsterStateWeightSetting newWeightSetting = new() {
             stateWeightList = newStateWeightList, queue = [], customizedInitQueue = []
         };
         newAttackGroup = GO.AddComponent<MonsterStateGroup>();
@@ -829,6 +790,9 @@ public class EnlightenedJi : BaseUnityPlugin
         );
 
         ModifySequence(Health, 2, [SneakAttack], [], [(LaserAltarOrFinisher, 2), (BigBlackHole, 3)]);
+        // ModifySequence(Health, 2, [SneakAttack], [], 
+        //     [(EasyLaserAltar, 2), (Blizzard, 2), (EasyLaserAltar, 2), (Blizzard, 2), (EasyLaserAltar, 2), (Blizzard, 2), (EasyLaserAltar, 2), (Blizzard, 2), (EasyLaserAltar, 2), (Blizzard, 2), (EasyLaserAltar, 2), (Blizzard, 2)]
+        // );
 
         // Phase 2 Sequence Attack Modifications
         ModifySequence(Opening, 2, [SneakAttack2], [], [
